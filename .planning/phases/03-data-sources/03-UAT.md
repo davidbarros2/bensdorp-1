@@ -1,9 +1,9 @@
 ---
-status: testing
+status: complete
 phase: 03-data-sources
 source: 03-01-SUMMARY.md, 03-02-SUMMARY.md, 03-03-SUMMARY.md, 03-04-SUMMARY.md
 started: 2026-05-23T00:00:00Z
-updated: 2026-05-23T00:00:00Z
+updated: 2026-05-23T12:00:00Z
 ---
 
 ## Current Test
@@ -14,9 +14,8 @@ updated: 2026-05-23T00:00:00Z
 
 ### 1. Full test suite passes clean
 expected: Run `uv run pytest tests/ -q` — see 128 passed, 0 failed, 0 errors in under 5s. No regressions in Phase 1 or Phase 2 baseline tests.
-result: issue
-reported: "1 failed — test_failed_ticker_exhausts_retries_emits_audit: assert 2 == 3 (payload['retries'] is 2 not 3)"
-severity: major
+result: pass
+note: "1 failure found (WR-04) and fixed inline — retry loop made 2 attempts not 3; audit payload recorded 2 not 3. Fixed in commit 98bf75e."
 
 ### 2. Public API: all 7 symbols importable
 expected: Run `uv run python -c "from bensdorp1.data import get_trading_days, is_trading_day, n_trading_days_ago, get_constituents, refresh_constituents, update_price_data, check_price_coverage; print('ok')"` — prints "ok" with no ImportError or AttributeError.
@@ -41,8 +40,8 @@ result: pass
 ## Summary
 
 total: 6
-passed: 5
-issues: 1
+passed: 6
+issues: 0
 pending: 0
 skipped: 0
 blocked: 0
@@ -50,14 +49,9 @@ blocked: 0
 ## Gaps
 
 - truth: "DATA-09: _download_with_retry makes exactly 3 attempts; audit payload records retries=3"
-  status: failed
-  reason: "User reported: 1 failed — test_failed_ticker_exhausts_retries_emits_audit: assert 2 == 3 (payload['retries'] is 2 not 3)"
+  status: fixed
+  reason: "Loop iterated over BACKOFF_DELAYS (2 elements) instead of range(retries); audit recorded len(BACKOFF_DELAYS)=2"
   severity: major
   test: 1
-  root_cause: "Two bugs in prices.py: (1) loop uses `for attempt, delay in enumerate(delays)` iterating over BACKOFF_DELAYS [1.0, 2.0] — only 2 attempts made instead of 3; (2) audit payload uses len(BACKOFF_DELAYS)=2 instead of retries=3"
-  artifacts:
-    - path: "src/bensdorp1/data/prices.py"
-      issue: "Loop iterates over delays list (2 elements) instead of range(retries) (3); audit records len(BACKOFF_DELAYS) instead of retries"
-  missing:
-    - "Change loop to `for attempt in range(retries)` with `time.sleep(BACKOFF_DELAYS[attempt])` and `if attempt < retries - 1`"
-    - "Change audit payload `retries` from `len(BACKOFF_DELAYS)` to `3` (or a named constant)"
+  root_cause: "Loop used `for attempt, delay in enumerate(delays)` — only 2 iterations. Audit payload used len(BACKOFF_DELAYS) instead of retries."
+  fix: "Changed loop to `for attempt in range(retries)`, sleep to BACKOFF_DELAYS[attempt], audit to retries=3. Removed 2 stale type: ignore comments. Commit 98bf75e."
