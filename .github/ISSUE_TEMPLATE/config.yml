@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Questions
+    url: https://github.com/davidandrebarros/bensdorp-1
+    about: This repository does not accept issues. Please contact the maintainer directly.
