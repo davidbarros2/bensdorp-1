@@ -101,17 +101,17 @@ This is a single-version project. All requirements below are v1. There is no v2 
 - [ ] **TEST-03**: Property-based tests using Hypothesis for all strategy invariants (effective_stop >= initial_stop, trailing_stop monotonic, no candidates when regime off, etc.)
 - [ ] **TEST-04**: Snapshot tests for all command outputs; Console(width=120) pinned in all snapshot tests
 - [ ] **TEST-05**: Integration tests for end-to-end flows with mocked external services (yfinance, Wikipedia, Slickcharts)
-- [ ] **TEST-06**: CI pipeline: pytest + ruff + mypy strict on every push and PR via GitHub Actions
+- [x] **TEST-06**: CI pipeline: pytest + ruff + mypy strict on every push and PR via GitHub Actions
 
 ### Repository
 
-- [ ] **REPO-01**: MIT License, public open-source repository
+- [x] **REPO-01**: MIT License, public open-source repository
 - [ ] **REPO-02**: Issues disabled (config.yml); Discussions disabled; Wiki disabled
 - [ ] **REPO-03**: PRs auto-closed via GitHub Actions workflow (close-pr.yml) with policy message
 - [ ] **REPO-04**: CONTRIBUTING.md explicitly stating no contributions accepted (no PRs, no issues, no feature requests)
 - [ ] **REPO-05**: README with installation, usage, CI badge, license badge, clear "no contributions" statement
 - [ ] **REPO-06**: Branch protection on main: CI must pass for any merge
-- [ ] **REPO-07**: GitHub Actions ci.yml: runs tests, lint, type check on push and PR
+- [x] **REPO-07**: GitHub Actions ci.yml: runs tests, lint, type check on push and PR
 
 ## v2 Requirements
 
@@ -202,14 +202,14 @@ None. This is a single-version project. v1 is the only version. Post-v1 is maint
 | TEST-03 | Phase 4: Strategy Logic | Pending |
 | TEST-04 | Phase 13: Edge Cases and Hardening | Pending |
 | TEST-05 | Phase 13: Edge Cases and Hardening | Pending |
-| TEST-06 | Phase 1: Project Skeleton and Tooling | Pending |
-| REPO-01 | Phase 1: Project Skeleton and Tooling | Pending |
+| TEST-06 | Phase 1: Project Skeleton and Tooling | Complete |
+| REPO-01 | Phase 1: Project Skeleton and Tooling | Complete |
 | REPO-02 | Phase 1: Project Skeleton and Tooling | Pending |
 | REPO-03 | Phase 1: Project Skeleton and Tooling | Pending |
 | REPO-04 | Phase 14: Documentation and Finalization | Pending |
 | REPO-05 | Phase 14: Documentation and Finalization | Pending |
 | REPO-06 | Phase 1: Project Skeleton and Tooling | Pending |
-| REPO-07 | Phase 1: Project Skeleton and Tooling | Pending |
+| REPO-07 | Phase 1: Project Skeleton and Tooling | Complete |
 
 **Coverage:**
 - v1 requirements: 57 total

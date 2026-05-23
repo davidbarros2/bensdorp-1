@@ -39,7 +39,7 @@ bensdorp1 is built in fourteen horizontal layers, each completing a technical st
 **Plans**: 4 plans in 4 waves
 
 **Wave 1** — Foundation
-- [ ] 01-01-PLAN.md — pyproject.toml, package skeleton (_app.py, cli.py, __init__.py files)
+- [x] 01-01-PLAN.md — pyproject.toml, package skeleton (_app.py, cli.py, __init__.py files)
 
 **Wave 2** *(blocked on Wave 1 completion)*
 - [ ] 01-02-PLAN.md — All 17 command modules (16 stubs + real help command) and cli.py wiring
@@ -200,7 +200,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Project Skeleton and Tooling | 0/4 | Not started | - |
+| 1. Project Skeleton and Tooling | 1/4 | In Progress|  |
 | 2. Database and Migrations | 0/TBD | Not started | - |
 | 3. Data Sources | 0/TBD | Not started | - |
 | 4. Strategy Logic | 0/TBD | Not started | - |
