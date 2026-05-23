@@ -1029,17 +1029,17 @@ def test_sequential_positions_allowed(db_engine: Engine) -> None:
 
 ---
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **WAL mode — should it be enabled?**
    - What we know: SQLAlchemy supports WAL mode via `@event.listens_for(engine, 'connect')` + `PRAGMA journal_mode=WAL`. WAL is generally recommended for concurrent readers.
    - What's unclear: bensdorp1 is a single-user, single-process CLI — concurrent access is impossible. WAL adds complexity (WAL file created alongside .db file, slightly more complex backup semantics).
-   - Recommendation: Skip WAL mode for v1. Default journal mode (`DELETE`) is correct for single-process use. If concurrent access is never the use case, WAL's benefits are zero.
+   - RESOLVED: Skip WAL mode for v1. Default journal mode (`DELETE`) is correct for single-process use. WAL's benefits are zero for this use case.
 
 2. **`scan_candidates` table — should `roc200` and `close` store values at scan time?**
    - What we know: These values change daily; storing them records the state at scan time for the `detail` command.
    - What's unclear: Whether the `fix` command needs to recompute or just look up stored values.
-   - Recommendation: Store snapshot values. `detail` needs to show what was suggested; recomputing later requires historical price re-fetch.
+   - RESOLVED: Store snapshot values. `detail` needs to show what was suggested; recomputing later requires historical price re-fetch.
 
 ---
 
