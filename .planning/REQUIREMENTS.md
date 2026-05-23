@@ -205,10 +205,10 @@ None. This is a single-version project. v1 is the only version. Post-v1 is maint
 | TEST-06 | Phase 1: Project Skeleton and Tooling | Complete |
 | REPO-01 | Phase 1: Project Skeleton and Tooling | Complete |
 | REPO-02 | Phase 1: Project Skeleton and Tooling | Complete |
-| REPO-03 | Phase 1: Project Skeleton and Tooling | Pending |
+| REPO-03 | Phase 1: Project Skeleton and Tooling | Complete |
 | REPO-04 | Phase 14: Documentation and Finalization | Pending |
 | REPO-05 | Phase 14: Documentation and Finalization | Pending |
-| REPO-06 | Phase 1: Project Skeleton and Tooling | Pending |
+| REPO-06 | Phase 1: Project Skeleton and Tooling | Complete |
 | REPO-07 | Phase 1: Project Skeleton and Tooling | Complete |
 
 **Coverage:**

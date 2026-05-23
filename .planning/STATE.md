@@ -2,7 +2,7 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: executing
+status: planning
 last_updated: "2026-05-23T14:00:00.000Z"
 last_activity: 2026-05-23
 progress:
@@ -20,7 +20,7 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-23)
 
 **Core value:** Every trading day, show the user exactly which positions triggered a stop and which stocks are top buy candidates, so they need less than 5 minutes of decision time.
-**Current focus:** Phase 1 — Project Skeleton and Tooling
+**Current focus:** Phase 2 — Database and Migrations
 
 ## Current Position
 
