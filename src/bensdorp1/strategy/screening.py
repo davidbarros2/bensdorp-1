@@ -13,6 +13,8 @@ D-02: This module has zero imports from bensdorp1.db or bensdorp1.data.
 All DataFrames are passed in by the caller (Phase 7 scan command).
 """
 
+from __future__ import annotations
+
 import math
 from typing import TypedDict
 
