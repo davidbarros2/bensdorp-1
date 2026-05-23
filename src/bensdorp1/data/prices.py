@@ -66,11 +66,13 @@ def _default_date_range() -> tuple[date, date]:
 
 
 def _download_bulk(tickers: list[str], start: str, end: str) -> pd.DataFrame:
-    """Return flattened DataFrame with (Date, Ticker) index, columns: Close, Volume.
+    """Return flattened DataFrame with (Date, Ticker) index, columns: Close[, Volume].
 
     Uses df.stack(level=1, future_stack=True) to flatten the multi-ticker
     MultiIndex result (multi_level_index=False does NOT flatten multi-ticker
     bulk downloads per RESEARCH Pitfall 3).
+    Returns empty DataFrame if Close is absent; Volume column may be absent
+    if yfinance omits it (e.g., certain index instruments).
     """
     df = yf.download(
         tickers,
@@ -83,7 +85,10 @@ def _download_bulk(tickers: list[str], start: str, end: str) -> pd.DataFrame:
     if df.empty:
         return pd.DataFrame()
     stacked: pd.DataFrame = df.stack(level=1, future_stack=True)
-    return stacked[["Close", "Volume"]]
+    available = [c for c in ["Close", "Volume"] if c in stacked.columns]
+    if "Close" not in available:
+        return pd.DataFrame()
+    return stacked[available]
 
 
 def _find_failed_tickers(
@@ -153,12 +158,13 @@ def _stacked_to_rows(stacked: pd.DataFrame) -> list[dict[str, object]]:
         else:
             ts = pd.Timestamp(str(date_idx))
             dt = ts.to_pydatetime()
+        vol_raw = row["Volume"] if "Volume" in row.index else None
         rows.append(
             {
                 "symbol": _to_db(str(ticker_yf)),
                 "trade_date": _ensure_utc(dt),
                 "close": float(row["Close"]),
-                "volume": int(row["Volume"]) if pd.notna(row["Volume"]) else None,
+                "volume": int(vol_raw) if vol_raw is not None and pd.notna(vol_raw) else None,
             }
         )
     return rows
