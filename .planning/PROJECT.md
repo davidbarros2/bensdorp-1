@@ -12,7 +12,12 @@ Every trading day, show the user exactly which positions triggered a stop and wh
 
 ### Validated
 
-(None yet — ship to validate)
+**State management (Phase 2 — Database and Migrations)**
+- [x] SQLite database at ~/bensdorp1/data/bensdorp1.db — schema defined, 7 tables (Validated in Phase 2)
+- [x] Automatic backup after every state-changing operation — `create_backup()` via `sqlite3.Connection.backup()` (Validated in Phase 2)
+- [x] Timestamped snapshots in ~/bensdorp1/backups/ (never auto-deleted) — `shutil.copy2` for latest.db (Validated in Phase 2)
+- [x] Structured audit log with 17 event types — `AuditEventType` StrEnum + `log_event()` (Validated in Phase 2)
+- [x] Maximum 10 open positions at any time — enforced by partial unique index `ix_positions_open_symbol` (Validated in Phase 2)
 
 ### Active
 
@@ -152,4 +157,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-05-23 after initialization*
+*Last updated: 2026-05-23 — Phase 2 complete (Database and Migrations)*
