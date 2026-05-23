@@ -132,7 +132,8 @@ def _download_with_retry(
             progress=False,
         )
         if df is not None and not df.empty and not df["Close"].isna().all():
-            result: pd.DataFrame = df[["Close", "Volume"]]
+            available_cols = [c for c in ["Close", "Volume"] if c in df.columns]
+            result: pd.DataFrame = df[available_cols]
             return result
         if attempt < retries - 1:
             time.sleep(BACKOFF_DELAYS[attempt])
@@ -268,6 +269,7 @@ def update_price_data(
             AuditEventType.DATA_FETCH_FAILED,
             payload={"source": "persist_price_rows", "error": str(exc)},
         )
+        raise  # Do not silently discard the fetch failure
 
 
 def check_price_coverage(
