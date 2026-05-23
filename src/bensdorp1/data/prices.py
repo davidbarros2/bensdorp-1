@@ -6,7 +6,7 @@ DATA-04: Default lookback is 220 NYSE trading days; computed as today minus 350
 DATA-08: Ticker normalization — period form (BRK.B) stored in DB; hyphen form
     (BRK-B) used only at yfinance call site. This module is the SOLE location
     for the conversion.
-DATA-09: Per-symbol retry exactly 3 attempts at delays 1s, 2s, 4s.
+DATA-09: Per-symbol retry exactly 3 attempts; sleeps 1s, 2s between them.
 DATA-10: check_price_coverage returns (covered, total); caller enforces the 0.95
     threshold.
 D-04: ^GSPC is always included in the download list (not a constituent but
@@ -33,7 +33,9 @@ from bensdorp1.db.schema import constituents_cache, price_daily
 
 SPX_TICKER: str = "^GSPC"
 DEFAULT_LOOKBACK_DAYS: int = 350
-BACKOFF_DELAYS: list[float] = [1.0, 2.0, 4.0]
+# Sleep durations between successive attempts: applied BEFORE attempts 2 and 3.
+# A 3-attempt retry loop sleeps len(BACKOFF_DELAYS) times (between attempts, not after the last).
+BACKOFF_DELAYS: list[float] = [1.0, 2.0]
 DEFAULT_REQUIRED_TRADING_DAYS: int = 220
 
 
