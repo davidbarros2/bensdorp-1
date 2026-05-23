@@ -1,3 +1,4 @@
+import click
 import typer
 
 from bensdorp1._app import app
@@ -15,7 +16,8 @@ def help(
         if cmd_obj is None:
             typer.echo(f"Unknown command: {command}", err=True)
             raise typer.Exit(1)
-        typer.echo(cmd_obj.get_help(root_ctx))
+        sub_ctx = click.Context(cmd_obj, parent=root_ctx, info_name=command)
+        typer.echo(cmd_obj.get_help(sub_ctx))
     else:
         typer.echo(ctx.find_root().get_help())
     raise typer.Exit()
