@@ -12,7 +12,7 @@ Used by: every state-changing command (buy, sell, fix, cash) after each write.
 
 import shutil
 import sqlite3
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 from sqlalchemy.engine import Engine
@@ -35,14 +35,19 @@ def create_backup(engine: Engine, backups_dir: Path) -> Path:
     """
     backups_dir.mkdir(parents=True, exist_ok=True)
 
-    ts = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")  # noqa: UP017
+    ts = datetime.now(UTC).strftime("%Y%m%dT%H%M%S_%fZ")
     backup_path = backups_dir / f"bensdorp1-{ts}.db"
     latest_path = backups_dir / "bensdorp1-latest.db"
 
     # Unwrap pool proxy → underlying sqlite3.Connection
     raw_conn = engine.raw_connection()
     try:
-        sqlite_conn: sqlite3.Connection = raw_conn.driver_connection  # type: ignore[assignment]
+        sqlite_conn = raw_conn.driver_connection
+        if not isinstance(sqlite_conn, sqlite3.Connection):
+            raise RuntimeError(
+                f"Expected sqlite3.Connection from pool; got {type(sqlite_conn)!r}. "
+                "Cannot create backup."
+            )
         backup_sqlite_conn = sqlite3.connect(str(backup_path))
         try:
             sqlite_conn.backup(backup_sqlite_conn)
