@@ -2,8 +2,8 @@
 
 The db_engine fixture provides a fresh file-based SQLite engine per test,
 using tmp_path to avoid cross-test interference.  engine.dispose() is called
-in the finally block — this is CRITICAL on Windows to release file handles
-before pytest attempts to clean up tmp_path (prevents [WinError 32]).
+inside _reset_engine_for_testing() — this is CRITICAL on Windows to release
+file handles before pytest attempts to clean up tmp_path (prevents [WinError 32]).
 """
 
 from collections.abc import Generator
@@ -31,5 +31,6 @@ def db_engine(tmp_path: Path) -> Generator[Engine, None, None]:
     try:
         yield engine
     finally:
+        # _reset_engine_for_testing() calls engine.dispose() internally;
+        # no second dispose() call needed.
         engine_module._reset_engine_for_testing()
-        engine.dispose()  # CRITICAL on Windows: prevents [WinError 32] in tmp_path
