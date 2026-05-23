@@ -80,6 +80,7 @@ def test_regime_filter_insufficient_rows() -> None:
 
 def test_liquidity_filter_top_quartile() -> None:
     """Keeps only symbols at or above the 75th percentile of 20-day average volume."""
+
     # 4 symbols with avg volumes 100, 200, 300, 400; 75th percentile = 325.0
     # Symbols with avg volume >= 325 (i.e., 400) should be included.
     # Quantile(0.75) of [100, 200, 300, 400] = 325.0
@@ -128,6 +129,7 @@ def test_liquidity_filter_insufficient() -> None:
 
 def test_liquidity_filter_nan_volume() -> None:
     """Excludes symbols with NaN in the 20-day volume window (conservative behavior)."""
+
     # Two symbols: one with valid volume, one with NaN in the 20-day window
     def make_valid_df() -> pd.DataFrame:
         return pd.DataFrame(
@@ -306,6 +308,4 @@ def test_regime_off_when_close_le_sma200(values: list[float]) -> None:
     today_close = float(series.iloc[-1])
     result = regime_filter(series)
     # The input is constructed to always be bearish; assert unconditionally.
-    assert result is False, (
-        f"regime_filter returned True but {today_close} <= {sma200}"
-    )
+    assert result is False, f"regime_filter returned True but {today_close} <= {sma200}"
