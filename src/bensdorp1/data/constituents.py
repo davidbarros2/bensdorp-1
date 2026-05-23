@@ -204,7 +204,15 @@ def refresh_constituents(engine: Engine) -> None:
         diff_count = -1
 
     # Step 4: Persist Wikipedia data (always primary per D-01)
-    _persist_constituents(engine, wiki_data)
+    try:
+        _persist_constituents(engine, wiki_data)
+    except Exception as exc:
+        log_event(
+            engine,
+            AuditEventType.DATA_FETCH_FAILED,
+            payload={"source": "persist_constituents", "error": str(exc)},
+        )
+        return
 
     # Step 5: Emit CONSTITUENTS_UPDATED
     log_event(

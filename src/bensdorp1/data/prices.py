@@ -258,7 +258,14 @@ def update_price_data(
         else:
             rows.extend(_per_symbol_to_rows(_to_db(ticker), df))
 
-    _persist_price_rows(engine, rows)
+    try:
+        _persist_price_rows(engine, rows)
+    except Exception as exc:
+        log_event(
+            engine,
+            AuditEventType.DATA_FETCH_FAILED,
+            payload={"source": "persist_price_rows", "error": str(exc)},
+        )
 
 
 def check_price_coverage(
