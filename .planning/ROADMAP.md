@@ -116,7 +116,7 @@ bensdorp1 is built in fourteen horizontal layers, each completing a technical st
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 03-02-PLAN.md — constituents.py: Wikipedia + Slickcharts fetch, discrepancy classification, 7-day cache (DATA-01, DATA-02, DATA-05) + full unit tests
+- [x] 03-02-PLAN.md — constituents.py: Wikipedia + Slickcharts fetch, discrepancy classification, 7-day cache (DATA-01, DATA-02, DATA-05) + full unit tests
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
@@ -289,7 +289,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 |-------|----------------|--------|-----------|
 | 1. Project Skeleton and Tooling | 4/4 | Complete | 2026-05-23 |
 | 2. Database and Migrations | 5/5 | Complete    | 2026-05-23 |
-| 3. Data Sources | 1/4 | In Progress|  |
+| 3. Data Sources | 2/4 | In Progress|  |
 | 4. Strategy Logic | 0/TBD | Not started | - |
 | 5. UI Components | 0/TBD | Not started | - |
 | 6. First-Run Init Command | 0/TBD | Not started | - |
