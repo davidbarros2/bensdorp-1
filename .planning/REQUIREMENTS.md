@@ -9,16 +9,16 @@ This is a single-version project. All requirements below are v1. There is no v2 
 
 ### Strategy
 
-- [ ] **STRAT-01**: Regime filter — buy candidates only generated when SPX close > SPX SMA 200 (200-day simple moving average of adjusted close)
-- [ ] **STRAT-02**: Liquidity filter — restrict universe to top 25% of S&P 500 constituents by 20-day average volume
-- [ ] **STRAT-03**: Momentum filter — stock close today > stock close 200 trading days ago (NYSE trading days only)
-- [ ] **STRAT-04**: Ranking — candidates ranked descending by ROC 200: `(close_today / close_t-200) - 1`; top 10 selected
-- [ ] **STRAT-05**: Maximum 10 open positions at any time
-- [ ] **STRAT-06**: Position sizing — `shares = floor((available_cash * 0.10) / prev_close)` using user-declared cash
-- [ ] **STRAT-07**: Initial stop — `entry_close * 0.93`, set once on entry day, never changes
-- [ ] **STRAT-08**: Trailing stop — `highest_close_since_day_after_entry * 0.75`, updated daily
-- [ ] **STRAT-09**: Effective stop — `max(initial_stop, trailing_stop)`; trigger when daily close <= effective_stop
-- [ ] **STRAT-10**: Exit triggers persist across daily scans until confirmed closed by user
+- [x] **STRAT-01**: Regime filter — buy candidates only generated when SPX close > SPX SMA 200 (200-day simple moving average of adjusted close)
+- [x] **STRAT-02**: Liquidity filter — restrict universe to top 25% of S&P 500 constituents by 20-day average volume
+- [x] **STRAT-03**: Momentum filter — stock close today > stock close 200 trading days ago (NYSE trading days only)
+- [x] **STRAT-04**: Ranking — candidates ranked descending by ROC 200: `(close_today / close_t-200) - 1`; top 10 selected
+- [x] **STRAT-05**: Maximum 10 open positions at any time
+- [x] **STRAT-06**: Position sizing — `shares = floor((available_cash * 0.10) / prev_close)` using user-declared cash
+- [x] **STRAT-07**: Initial stop — `entry_close * 0.93`, set once on entry day, never changes
+- [x] **STRAT-08**: Trailing stop — `highest_close_since_day_after_entry * 0.75`, updated daily
+- [x] **STRAT-09**: Effective stop — `max(initial_stop, trailing_stop)`; trigger when daily close <= effective_stop
+- [x] **STRAT-10**: Exit triggers persist across daily scans until confirmed closed by user
 
 ### Data
 
@@ -96,9 +96,9 @@ This is a single-version project. All requirements below are v1. There is no v2 
 
 ### Testing and CI
 
-- [ ] **TEST-01**: Unit test coverage > 95% on strategy/ modules
-- [ ] **TEST-02**: Unit test coverage > 90% on all source modules
-- [ ] **TEST-03**: Property-based tests using Hypothesis for all strategy invariants (effective_stop >= initial_stop, trailing_stop monotonic, no candidates when regime off, etc.)
+- [x] **TEST-01**: Unit test coverage > 95% on strategy/ modules
+- [x] **TEST-02**: Unit test coverage > 90% on all source modules
+- [x] **TEST-03**: Property-based tests using Hypothesis for all strategy invariants (effective_stop >= initial_stop, trailing_stop monotonic, no candidates when regime off, etc.)
 - [ ] **TEST-04**: Snapshot tests for all command outputs; Console(width=120) pinned in all snapshot tests
 - [ ] **TEST-05**: Integration tests for end-to-end flows with mocked external services (yfinance, Wikipedia, Slickcharts)
 - [x] **TEST-06**: CI pipeline: pytest + ruff + mypy strict on every push and PR via GitHub Actions
@@ -143,16 +143,16 @@ None. This is a single-version project. v1 is the only version. Post-v1 is maint
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| STRAT-01 | Phase 4: Strategy Logic | Pending |
-| STRAT-02 | Phase 4: Strategy Logic | Pending |
-| STRAT-03 | Phase 4: Strategy Logic | Pending |
-| STRAT-04 | Phase 4: Strategy Logic | Pending |
-| STRAT-05 | Phase 4: Strategy Logic | Pending |
-| STRAT-06 | Phase 4: Strategy Logic | Pending |
-| STRAT-07 | Phase 4: Strategy Logic | Pending |
-| STRAT-08 | Phase 4: Strategy Logic | Pending |
-| STRAT-09 | Phase 4: Strategy Logic | Pending |
-| STRAT-10 | Phase 4: Strategy Logic | Pending |
+| STRAT-01 | Phase 4: Strategy Logic | Complete |
+| STRAT-02 | Phase 4: Strategy Logic | Complete |
+| STRAT-03 | Phase 4: Strategy Logic | Complete |
+| STRAT-04 | Phase 4: Strategy Logic | Complete |
+| STRAT-05 | Phase 4: Strategy Logic | Complete |
+| STRAT-06 | Phase 4: Strategy Logic | Complete |
+| STRAT-07 | Phase 4: Strategy Logic | Complete |
+| STRAT-08 | Phase 4: Strategy Logic | Complete |
+| STRAT-09 | Phase 4: Strategy Logic | Complete |
+| STRAT-10 | Phase 4: Strategy Logic | Complete |
 | DATA-01 | Phase 3: Data Sources | Complete |
 | DATA-02 | Phase 3: Data Sources | Complete |
 | DATA-03 | Phase 3: Data Sources | Complete |
@@ -197,9 +197,9 @@ None. This is a single-version project. v1 is the only version. Post-v1 is maint
 | UI-08 | Phase 5: UI Components | Pending |
 | UI-09 | Phase 5: UI Components | Pending |
 | UI-10 | Phase 5: UI Components | Pending |
-| TEST-01 | Phase 4: Strategy Logic | Pending |
-| TEST-02 | Phase 4: Strategy Logic | Pending |
-| TEST-03 | Phase 4: Strategy Logic | Pending |
+| TEST-01 | Phase 4: Strategy Logic | Complete |
+| TEST-02 | Phase 4: Strategy Logic | Complete |
+| TEST-03 | Phase 4: Strategy Logic | Complete |
 | TEST-04 | Phase 13: Edge Cases and Hardening | Pending |
 | TEST-05 | Phase 13: Edge Cases and Hardening | Pending |
 | TEST-06 | Phase 1: Project Skeleton and Tooling | Complete |
