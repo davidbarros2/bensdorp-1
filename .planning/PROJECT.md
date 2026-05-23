@@ -75,9 +75,9 @@ Every trading day, show the user exactly which positions triggered a stop and wh
 - [ ] 13 catch-up event templates with fixed wording
 
 **Testing**
-- [ ] Unit test coverage > 95% on strategy/ modules
-- [ ] Unit test coverage > 90% overall
-- [ ] Property-based tests for strategy invariants (pytest + Hypothesis)
+- [x] Unit test coverage > 95% on strategy/ modules — 100% on screening.py + positions.py (Validated in Phase 4)
+- [x] Unit test coverage > 90% overall — 96.17% across all modules (Validated in Phase 4)
+- [x] Property-based tests for strategy invariants (pytest + Hypothesis) — 4 invariants, 1700 examples (Validated in Phase 4)
 - [ ] Snapshot tests for all command outputs
 - [ ] CI pipeline: tests, lint (ruff), type check (mypy strict) on every push/PR
 
@@ -157,4 +157,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-05-23 — Phase 2 complete (Database and Migrations)*
+*Last updated: 2026-05-23 — Phase 4 complete (Strategy Logic — screening + positions pure functions, 100%/96% coverage, mypy strict clean)*
