@@ -40,6 +40,10 @@ src = ["src"]
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B", "C4", "PT"]
 
+[tool.ruff.lint.per-file-ignores]
+# cli.py uses intentional import ordering: `from` import establishes app before side-effect imports
+"src/bensdorp1/cli.py" = ["I001"]
+
 [tool.mypy]
 python_version = "3.11"
 strict = true
