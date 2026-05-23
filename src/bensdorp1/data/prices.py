@@ -82,9 +82,9 @@ def _download_bulk(tickers: list[str], start: str, end: str) -> pd.DataFrame:
         progress=False,
         group_by="column",
     )
-    if df.empty:
+    if df is None or df.empty:
         return pd.DataFrame()
-    stacked: pd.DataFrame = df.stack(level=1, future_stack=True)
+    stacked: pd.DataFrame = df.stack(level=1, future_stack=True)  # type: ignore[assignment]
     available = [c for c in ["Close", "Volume"] if c in stacked.columns]
     if "Close" not in available:
         return pd.DataFrame()
@@ -131,7 +131,7 @@ def _download_with_retry(
             multi_level_index=False,
             progress=False,
         )
-        if not df.empty and not df["Close"].isna().all():
+        if df is not None and not df.empty and not df["Close"].isna().all():
             result: pd.DataFrame = df[["Close", "Volume"]]
             return result
         if attempt < len(delays) - 1:
@@ -164,7 +164,7 @@ def _stacked_to_rows(stacked: pd.DataFrame) -> list[dict[str, object]]:
                 "symbol": _to_db(str(ticker_yf)),
                 "trade_date": _ensure_utc(dt),
                 "close": float(row["Close"]),
-                "volume": int(vol_raw) if vol_raw is not None and pd.notna(vol_raw) else None,
+                "volume": int(vol_raw) if vol_raw is not None and pd.notna(vol_raw) else None,  # type: ignore[arg-type]
             }
         )
     return rows
