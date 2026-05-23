@@ -10,7 +10,7 @@ bensdorp1 is built in fourteen horizontal layers, each completing a technical st
 - Integer phases (1–14): Planned milestone work executed in order
 - Decimal phases (e.g., 2.1): Urgent insertions created via `/gsd-phase --insert`
 
-- [ ] **Phase 1: Project Skeleton and Tooling** - Repo, package structure, CI, help command
+- [x] **Phase 1: Project Skeleton and Tooling** - Repo, package structure, CI, help command
 - [ ] **Phase 2: Database and Migrations** - SQLite schema, backup, audit log, state tables
 - [ ] **Phase 3: Data Sources** - Constituents fetch, price download, NYSE calendar, rate limiting
 - [ ] **Phase 4: Strategy Logic** - All filters, ranking, stop calculations, unit and property tests
@@ -48,7 +48,7 @@ bensdorp1 is built in fourteen horizontal layers, each completing a technical st
 - [x] 01-03-PLAN.md — Test suite (test_cli.py, test_repo.py), LICENSE, ISSUE_TEMPLATE config
 
 **Wave 4** *(blocked on Wave 3 completion)*
-- [ ] 01-04-PLAN.md — GitHub Actions workflows (ci.yml, close-pr.yml) + manual settings checkpoint [human]
+- [x] 01-04-PLAN.md — GitHub Actions workflows (ci.yml, close-pr.yml) + manual settings checkpoint [human]
 
 **Cross-cutting constraints:** All command modules import `app` from `bensdorp1._app`; `-> None` on every command function; `uv run` prefix in all CI commands
 
@@ -200,7 +200,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Project Skeleton and Tooling | 3/4 | In Progress|  |
+| 1. Project Skeleton and Tooling | 4/4 | Complete | 2026-05-23 |
 | 2. Database and Migrations | 0/TBD | Not started | - |
 | 3. Data Sources | 0/TBD | Not started | - |
 | 4. Strategy Logic | 0/TBD | Not started | - |
