@@ -13,7 +13,7 @@ bensdorp1 is built in fourteen horizontal layers, each completing a technical st
 
 - [x] **Phase 1: Project Skeleton and Tooling** - Repo, package structure, CI, help command
 - [x] **Phase 2: Database and Migrations** - SQLite schema, backup, audit log, state tables (completed 2026-05-23)
-- [ ] **Phase 3: Data Sources** - Constituents fetch, price download, NYSE calendar, rate limiting
+- [x] **Phase 3: Data Sources** - Constituents fetch, price download, NYSE calendar, rate limiting (completed 2026-05-23)
 - [ ] **Phase 4: Strategy Logic** - All filters, ranking, stop calculations, unit and property tests
 - [ ] **Phase 5: UI Components** - Style guide, formatting primitives, feedback thresholds, tables
 - [ ] **Phase 6: First-Run Init Command** - `init` — directory tree, DB creation, history download, cash declaration
@@ -124,7 +124,7 @@ bensdorp1 is built in fourteen horizontal layers, each completing a technical st
 
 **Wave 4** *(blocked on Wave 3 completion)*
 
-- [ ] 03-04-PLAN.md — data/__init__.py final public API re-exports + full-repo integration verification gate (pytest + mypy strict + ruff all green)
+- [x] 03-04-PLAN.md — data/__init__.py final public API re-exports + full-repo integration verification gate (pytest + mypy strict + ruff all green)
 
 **Cross-cutting constraints:** Ticker normalization period↔hyphen ONLY in prices.py; ^GSPC always appended to price downloads; no pytz anywhere in data/ (pmc v5 uses zoneinfo); all yfinance calls pass auto_adjust=True; data/ MUST NOT import from _app.py or commands/; DATA-06 (split detection) is OUT OF SCOPE — owned by Phase 11.
 
@@ -289,7 +289,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 |-------|----------------|--------|-----------|
 | 1. Project Skeleton and Tooling | 4/4 | Complete | 2026-05-23 |
 | 2. Database and Migrations | 5/5 | Complete    | 2026-05-23 |
-| 3. Data Sources | 3/4 | In Progress|  |
+| 3. Data Sources | 4/4 | Complete   | 2026-05-23 |
 | 4. Strategy Logic | 0/TBD | Not started | - |
 | 5. UI Components | 0/TBD | Not started | - |
 | 6. First-Run Init Command | 0/TBD | Not started | - |
