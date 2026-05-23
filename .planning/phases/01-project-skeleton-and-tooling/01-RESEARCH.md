@@ -761,22 +761,25 @@ def test_help_subcommand_shows_help(cmd: str) -> None:
 
 ---
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **pyproject.toml: uv_build version upper bound**
    - What we know: official docs show `>=0.11.16,<0.12`; pydevtools showed `>=0.7.19,<0.8.0`; uv on this machine is 0.10.12
    - What's unclear: the correct upper bound to use now that uv is at 0.10.x — the `<0.12` range from docs implies 0.11.x exists on PyPI
    - Recommendation: Use `requires = ["uv_build>=0.7,<1.0"]` as a liberal constraint, or check PyPI directly: `pip index versions uv_build`
+   - RESOLVED: `requires = ["uv_build>=0.7,<1.0"]` — liberal upper bound accepted; Plan 01-01 uses this exact constraint per PATTERNS.md.
 
 2. **help command implementation — which approach**
    - What we know: Approach B (in-process Click context) is cleaner but relies on Typer internals; Approach A (subprocess) is always correct but slower
    - What's unclear: whether `ctx.find_root().command.commands` is stable API in Typer 0.21+
    - Recommendation: Implement Approach B with Approach A as tested fallback. If Approach B breaks in tests, switch to A.
+   - RESOLVED: Approach B (in-process Click context via `ctx.find_root().command.commands.get(command)`) chosen; Plan 01-02 Task 2 implements this. Approach A (subprocess) documented as fallback if tests reveal instability.
 
 3. **REPO-06 branch protection — is it automatable?**
    - What we know: GitHub branch protection rules are configured in repository settings, not via committed files
    - What's unclear: whether a GitHub Actions workflow can set branch protection rules (requires `admin` scope)
    - Recommendation: Document as a manual step in the plan. This is a post-push repo configuration, not a code deliverable.
+   - RESOLVED: Manual step. Plan 01-04 Task 2 (human checkpoint) documents the exact branch protection settings to apply after push: require status checks `test (ubuntu-latest)` and `test (windows-latest)` before merge.
 
 ---
 

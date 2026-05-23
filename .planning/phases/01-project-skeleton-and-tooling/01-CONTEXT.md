@@ -29,7 +29,7 @@ No business logic is implemented in this phase. No database, no data fetching, n
 - **D-07:** OS matrix: `ubuntu-latest` + `windows-latest`. User runs this CLI on Windows daily, so Windows CI is meaningful and catches cross-platform issues (path separators, etc.).
 - **D-08:** uv download cache enabled in both CI jobs. Cache key based on `uv.lock` (or `pyproject.toml` hash). Cuts install time on cache hits.
 - **D-09:** CI workflow (`ci.yml`) runs on every push and PR: `pytest` + `ruff check` + `ruff format --check` + `mypy --strict`.
-- **D-10:** Close-PR workflow (`close-pr.yml`) auto-closes any PR with the no-contributions policy message. Runs on `pull_request` opened/reopened events.
+- **D-10:** Close-PR workflow (`close-pr.yml`) auto-closes any PR with the no-contributions policy message. Runs on `pull_request_target` opened/reopened events (not `pull_request` — `pull_request_target` runs from the base branch with write tokens, which is required to close fork PRs and post comments).
 
 ### help Command Design
 - **D-11:** `bensdorp1 help [COMMAND]` is a real Typer command. When `COMMAND` is given, it delegates to Typer's built-in `--help` for that subcommand (no hand-crafted docs to maintain). When called without arguments, it shows the full categorized command list.

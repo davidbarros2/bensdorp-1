@@ -36,12 +36,21 @@ bensdorp1 is built in fourteen horizontal layers, each completing a technical st
   2. `bensdorp1 help <command>` returns detailed help for any recognized command name
   3. GitHub Actions ci.yml runs pytest, ruff, and mypy strict on every push and PR; the workflow passes on a clean repo
   4. PRs are auto-closed by close-pr.yml with the no-contributions policy message; Issues and Discussions are disabled in repo settings
-**Plans**: 4 plans
-Plans:
+**Plans**: 4 plans in 4 waves
+
+**Wave 1** — Foundation
 - [ ] 01-01-PLAN.md — pyproject.toml, package skeleton (_app.py, cli.py, __init__.py files)
+
+**Wave 2** *(blocked on Wave 1 completion)*
 - [ ] 01-02-PLAN.md — All 17 command modules (16 stubs + real help command) and cli.py wiring
+
+**Wave 3** *(blocked on Wave 2 completion)*
 - [ ] 01-03-PLAN.md — Test suite (test_cli.py, test_repo.py), LICENSE, ISSUE_TEMPLATE config
-- [ ] 01-04-PLAN.md — GitHub Actions workflows (ci.yml, close-pr.yml) + manual settings checkpoint
+
+**Wave 4** *(blocked on Wave 3 completion)*
+- [ ] 01-04-PLAN.md — GitHub Actions workflows (ci.yml, close-pr.yml) + manual settings checkpoint [human]
+
+**Cross-cutting constraints:** All command modules import `app` from `bensdorp1._app`; `-> None` on every command function; `uv run` prefix in all CI commands
 
 ### Phase 2: Database and Migrations
 **Goal**: The SQLite schema is defined, migrations run idempotently, and all state-management primitives (backup, audit log) work in isolation
