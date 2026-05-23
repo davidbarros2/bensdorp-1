@@ -1,0 +1,27 @@
+{
+  "version": "1.0",
+  "timestamp": "2026-05-23T18:14:41.264Z",
+  "phase": "04",
+  "phase_name": "strategy-logic",
+  "phase_dir": ".planning/phases/04-strategy-logic",
+  "plan": 3,
+  "task": null,
+  "total_tasks": null,
+  "status": "paused",
+  "completed_tasks": [
+    {"id": 1, "name": "04-01-PLAN: screening.py — regime_filter, liquidity_filter, momentum_filter, rank_candidates", "status": "done", "commit": "833d1eb"},
+    {"id": 2, "name": "04-02-PLAN: positions.py — stop calculations, position sizing, exit trigger", "status": "done", "commit": "270a02a"},
+    {"id": 3, "name": "04-03-PLAN: verification gate — coverage ≥95% strategy, ≥90% all, mypy strict, ruff", "status": "done", "commit": "b936fcb"}
+  ],
+  "remaining_tasks": [],
+  "blockers": [],
+  "human_actions_pending": [],
+  "decisions": [
+    {"decision": "DATA-06 split detection deferred to Phase 11", "rationale": "Documented in __init__.py docstring, prices.py docstring, plan must_haves, and threat model", "phase": "04"},
+    {"decision": "Bearish regime_filter assertion made unconditional (IN-02)", "rationale": "Fix for silent failure when regime is False — assertion was conditional before the fix", "phase": "04"},
+    {"decision": "Used math.floor not int() for position sizing", "rationale": "Matches exact strategy rule; int() truncates the same way but math.floor is explicit about intent", "phase": "04"}
+  ],
+  "uncommitted_files": [".planning/STATE.md"],
+  "next_action": "Run /gsd-discuss-phase for Phase 05: UI Components — review UI-01 through UI-10 requirements in REQUIREMENTS.md before discussing",
+  "context_notes": "Phase 4 is 100% complete. All 3 plans executed, UAT passed (10/10), code review complete with all findings resolved, security verification done, Nyquist validation complete. Ready to start Phase 5 (UI Components)."
+}
