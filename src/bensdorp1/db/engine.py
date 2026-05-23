@@ -10,6 +10,8 @@ from pathlib import Path
 
 from sqlalchemy.engine import URL, Engine, create_engine
 
+from bensdorp1.db.schema import metadata
+
 _engine: Engine | None = None
 _engine_lock: threading.Lock = threading.Lock()
 
@@ -34,9 +36,13 @@ def _resolve_db_path(override: Path | None) -> Path:
 def _build_engine(path: Path) -> Engine:
     """Build a SQLAlchemy Engine for the given SQLite file path.
 
+    Creates the parent directory if it does not exist before building the URL,
+    so first-run users never see a cryptic OperationalError from SQLite.
+
     Uses URL.create() — not f-string URL construction — for correct Windows
     path handling (backslashes in str(Path) are handled by the pysqlite driver).
     """
+    path.parent.mkdir(parents=True, exist_ok=True)
     url = URL.create("sqlite+pysqlite", database=str(path))
     return create_engine(url)
 
@@ -65,8 +71,6 @@ def run_migrations(engine: Engine) -> None:
 
     Uses checkfirst=True so calling this multiple times never raises.
     """
-    from bensdorp1.db.schema import metadata  # local import avoids circular import risk
-
     metadata.create_all(engine, checkfirst=True)
 
 
