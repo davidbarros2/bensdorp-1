@@ -263,8 +263,15 @@ def check_price_coverage(
         total: int = conn.execute(
             select(func.count()).select_from(constituents_cache)
         ).scalar_one()
+        # Only count constituent symbols (those in constituents_cache).
+        # ^GSPC is in price_daily but NOT in constituents_cache, so it is
+        # naturally excluded by the JOIN (DATA-10: constituent-only coverage).
         subq = (
             select(price_daily.c.symbol)
+            .join(
+                constituents_cache,
+                price_daily.c.symbol == constituents_cache.c.symbol,
+            )
             .group_by(price_daily.c.symbol)
             .having(func.count(price_daily.c.id) >= required_days)
             .subquery()
