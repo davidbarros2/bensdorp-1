@@ -46,7 +46,11 @@ def _to_yfinance(symbol: str) -> str:
 
 
 def _to_db(symbol: str) -> str:
-    """Convert yfinance hyphen form back to DB period form. BRK-B -> BRK.B."""
+    """Convert yfinance hyphen form back to DB period form. BRK-B -> BRK.B.
+
+    Assumption: ALL hyphens in yfinance ticker names represent periods in the
+    exchange/DB canonical form. This holds for all current S&P 500 constituents.
+    """
     return symbol.replace("-", ".")
 
 
