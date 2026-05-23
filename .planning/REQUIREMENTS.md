@@ -24,14 +24,14 @@ This is a single-version project. All requirements below are v1. There is no v2 
 
 - [x] **DATA-01**: S&P 500 constituents fetched from Wikipedia (primary) and cross-checked against Slickcharts (secondary)
 - [x] **DATA-02**: Constituents cross-check: 0-3 discrepancy → use primary silently; 4-10 → warn; 11+ → abort buy candidates, continue exit monitoring
-- [ ] **DATA-03**: Price data via yfinance with `auto_adjust=True` (adjusted close for all calculations)
-- [ ] **DATA-04**: 220 trading days of price history required (200 for calculations + 20-day buffer)
+- [x] **DATA-03**: Price data via yfinance with `auto_adjust=True` (adjusted close for all calculations)
+- [x] **DATA-04**: 220 trading days of price history required (200 for calculations + 20-day buffer)
 - [x] **DATA-05**: Constituents cache refreshed automatically every 7 days at scan time
 - [ ] **DATA-06**: Split detection and automatic position adjustment (shares, entry_price, stops) on every scan for held positions
 - [x] **DATA-07**: NYSE market calendar used for all trading day arithmetic — never calendar days
-- [ ] **DATA-08**: Ticker normalization: period form (`BRK.B`) stored in DB; hyphen form (`BRK-B`) used only at yfinance call site
-- [ ] **DATA-09**: Rate-limited yfinance download with retry: 3 retries, exponential backoff (1s, 2s, 4s) per symbol
-- [ ] **DATA-10**: Scan aborted if fewer than 95% of constituents have price data
+- [x] **DATA-08**: Ticker normalization: period form (`BRK.B`) stored in DB; hyphen form (`BRK-B`) used only at yfinance call site
+- [x] **DATA-09**: Rate-limited yfinance download with retry: 3 retries, exponential backoff (1s, 2s, 4s) per symbol
+- [x] **DATA-10**: Scan aborted if fewer than 95% of constituents have price data
 
 ### Commands — Setup
 
@@ -155,14 +155,14 @@ None. This is a single-version project. v1 is the only version. Post-v1 is maint
 | STRAT-10 | Phase 4: Strategy Logic | Pending |
 | DATA-01 | Phase 3: Data Sources | Complete |
 | DATA-02 | Phase 3: Data Sources | Complete |
-| DATA-03 | Phase 3: Data Sources | Pending |
-| DATA-04 | Phase 3: Data Sources | Pending |
+| DATA-03 | Phase 3: Data Sources | Complete |
+| DATA-04 | Phase 3: Data Sources | Complete |
 | DATA-05 | Phase 3: Data Sources | Complete |
 | DATA-06 | Phase 11: Catch-Up Logic | Pending |
 | DATA-07 | Phase 3: Data Sources | Complete |
-| DATA-08 | Phase 3: Data Sources | Pending |
-| DATA-09 | Phase 3: Data Sources | Pending |
-| DATA-10 | Phase 3: Data Sources | Pending |
+| DATA-08 | Phase 3: Data Sources | Complete |
+| DATA-09 | Phase 3: Data Sources | Complete |
+| DATA-10 | Phase 3: Data Sources | Complete |
 | CMD-01 | Phase 6: First-Run Init Command | Pending |
 | CMD-02 | Phase 10: System Commands | Pending |
 | CMD-03 | Phase 7: Scan Command | Pending |

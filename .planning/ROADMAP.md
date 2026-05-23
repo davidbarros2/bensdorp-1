@@ -120,7 +120,7 @@ bensdorp1 is built in fourteen horizontal layers, each completing a technical st
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
-- [ ] 03-03-PLAN.md — prices.py: yfinance bulk + per-symbol retry, period↔hyphen normalization, 95% coverage check (DATA-03, DATA-04, DATA-08, DATA-09, DATA-10) + full unit tests; DATA-06 deferred to Phase 11
+- [x] 03-03-PLAN.md — prices.py: yfinance bulk + per-symbol retry, period↔hyphen normalization, 95% coverage check (DATA-03, DATA-04, DATA-08, DATA-09, DATA-10) + full unit tests; DATA-06 deferred to Phase 11
 
 **Wave 4** *(blocked on Wave 3 completion)*
 
@@ -289,7 +289,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 |-------|----------------|--------|-----------|
 | 1. Project Skeleton and Tooling | 4/4 | Complete | 2026-05-23 |
 | 2. Database and Migrations | 5/5 | Complete    | 2026-05-23 |
-| 3. Data Sources | 2/4 | In Progress|  |
+| 3. Data Sources | 3/4 | In Progress|  |
 | 4. Strategy Logic | 0/TBD | Not started | - |
 | 5. UI Components | 0/TBD | Not started | - |
 | 6. First-Run Init Command | 0/TBD | Not started | - |
