@@ -221,8 +221,12 @@ def update_price_data(
     only at yfinance call site. Default date range: today minus ~350 calendar
     days through today (covers 220 trading days with buffer).
     """
-    if start is None or end is None:
+    if start is None and end is None:
         start, end = _default_date_range()
+    elif start is None or end is None:
+        raise ValueError(
+            "update_price_data requires both start and end, or neither."
+        )
 
     # D-04: ^GSPC ALWAYS included regardless of constituents list
     db_set: set[str] = set(symbols) | {SPX_TICKER}
