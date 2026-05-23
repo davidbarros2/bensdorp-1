@@ -41,3 +41,24 @@ def test_run_migrations_idempotent(db_engine: Engine) -> None:
     """run_migrations() can be called twice without raising (checkfirst=True)."""
     run_migrations(db_engine)
     run_migrations(db_engine)  # second call must not raise
+
+
+def test_get_engine_returns_cached_singleton(tmp_path: Path) -> None:
+    """get_engine() returns the same Engine object on repeated calls regardless of path."""
+    engine_module._reset_engine_for_testing()
+    try:
+        e1 = engine_module.get_engine(tmp_path / "a.db")
+        e2 = engine_module.get_engine(tmp_path / "b.db")  # different path, ignored
+        assert e1 is e2
+    finally:
+        engine_module._reset_engine_for_testing()
+
+
+def test_get_engine_returns_engine_instance(tmp_path: Path) -> None:
+    """get_engine() returns an Engine instance on first call."""
+    engine_module._reset_engine_for_testing()
+    try:
+        e = engine_module.get_engine(tmp_path / "t.db")
+        assert isinstance(e, Engine)
+    finally:
+        engine_module._reset_engine_for_testing()
