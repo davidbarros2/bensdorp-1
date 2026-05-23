@@ -98,10 +98,11 @@ def test_liquidity_filter_top_quartile() -> None:
     }
     result = liquidity_filter(price_dfs)
     # 75th percentile of [100, 200, 300, 400] = 325.0
-    # Only D (400) is >= 325
+    # Only D (400) is >= 325; C (300) is below the threshold
     assert "D" in result
     assert "A" not in result
     assert "B" not in result
+    assert "C" not in result
 
 
 def test_liquidity_filter_empty() -> None:
@@ -158,33 +159,35 @@ def test_liquidity_filter_nan_volume() -> None:
 
 
 def test_momentum_filter_pass() -> None:
-    """Includes symbol when today's close is strictly above close 200 rows ago."""
-    closes = [100.0] * 199 + [150.0]  # 200 rows; close[-1]=150 > close[-200]=100
-    df = build_price_df(200, closes)
+    """Includes symbol when today's close is strictly above close 200 trading days ago."""
+    # 201 rows: iloc[-201]=100.0 (T-200), iloc[-1]=150.0 (today)
+    closes = [100.0] * 200 + [150.0]  # 201 rows; close[-1]=150 > close[-201]=100
+    df = build_price_df(201, closes)
     result = momentum_filter({"AAPL": df})
     assert "AAPL" in result
 
 
 def test_momentum_filter_reject() -> None:
-    """Excludes symbol when today's close is below close 200 rows ago."""
-    closes = [100.0] * 199 + [50.0]  # close[-1]=50 < close[-200]=100
-    df = build_price_df(200, closes)
+    """Excludes symbol when today's close is below close 200 trading days ago."""
+    # 201 rows: iloc[-201]=100.0 (T-200), iloc[-1]=50.0 (today)
+    closes = [100.0] * 200 + [50.0]  # close[-1]=50 < close[-201]=100
+    df = build_price_df(201, closes)
     result = momentum_filter({"AAPL": df})
     assert "AAPL" not in result
 
 
 def test_momentum_filter_boundary() -> None:
-    """Excludes symbol when today's close equals close 200 rows ago (strict > required)."""
-    closes = [100.0] * 200  # close[-1] == close[-200] == 100.0
-    df = build_price_df(200, closes)
+    """Excludes symbol when today's close equals close 200 trading days ago (strict > required)."""
+    closes = [100.0] * 201  # close[-1] == close[-201] == 100.0
+    df = build_price_df(201, closes)
     result = momentum_filter({"AAPL": df})
     assert "AAPL" not in result
 
 
 def test_momentum_filter_insufficient() -> None:
-    """Raises ValueError when symbol has fewer than 200 rows."""
-    df = build_price_df(199, [100.0] * 199)
-    with pytest.raises(ValueError, match=r"needs >= 200"):
+    """Raises ValueError when symbol has fewer than 201 rows."""
+    df = build_price_df(200, [100.0] * 200)
+    with pytest.raises(ValueError, match=r"needs >= 201"):
         momentum_filter({"AAPL": df})
 
 
@@ -193,13 +196,14 @@ def test_momentum_filter_insufficient() -> None:
 
 def test_rank_candidates_ordering() -> None:
     """Returns candidates sorted descending by roc_200, limited to top 10."""
-    # Build 15 symbols with distinct close values so ROC differs
+    # Build 15 symbols with distinct close values so ROC differs.
+    # 201 rows: iloc[-201]=50.0 (T-200), iloc[-1]=100+i*5 (today)
     price_dfs: dict[str, pd.DataFrame] = {}
     for i in range(15):
-        # close[-1] = 100 + i*5; close[-200] = 50 (same for all)
+        # close[-1] = 100 + i*5; close[-201] = 50 (same for all)
         # roc_200 = (close_today / 50) - 1
-        closes = [50.0] + [75.0] * 198 + [100.0 + i * 5]
-        df = build_price_df(200, closes)
+        closes = [50.0] + [75.0] * 199 + [100.0 + i * 5]
+        df = build_price_df(201, closes)
         price_dfs[f"SYM{i:02d}"] = df
 
     result = rank_candidates(price_dfs, available_cash=100_000.0)
@@ -213,8 +217,8 @@ def test_rank_candidates_limits_to_10() -> None:
     """Returns at most 10 candidates even when more than 10 symbols are provided."""
     price_dfs: dict[str, pd.DataFrame] = {}
     for i in range(20):
-        closes = [50.0] + [75.0] * 198 + [100.0 + i]
-        df = build_price_df(200, closes)
+        closes = [50.0] + [75.0] * 199 + [100.0 + i]
+        df = build_price_df(201, closes)
         price_dfs[f"SYM{i:02d}"] = df
 
     result = rank_candidates(price_dfs, available_cash=100_000.0)
@@ -228,9 +232,9 @@ def test_rank_candidates_empty() -> None:
 
 
 def test_rank_candidates_insufficient_rows() -> None:
-    """Raises ValueError when a symbol has fewer than 200 rows."""
-    df = build_price_df(199, [100.0] * 199)
-    with pytest.raises(ValueError, match=r"need >= 200|needs >= 200"):
+    """Raises ValueError when a symbol has fewer than 201 rows."""
+    df = build_price_df(200, [100.0] * 200)
+    with pytest.raises(ValueError, match=r"need >= 201|needs >= 201"):
         rank_candidates({"AAPL": df}, 100_000.0)
 
 
@@ -238,8 +242,8 @@ def test_rank_candidates_zero_position_size() -> None:
     """Returns position_size of 0 when floor division gives less than 1 share."""
     # available_cash=0.01, prev_close=10000.0
     # floor((0.01 * 0.10) / 10000.0) = floor(0.000_0001) = 0
-    closes = [10000.0] * 200
-    df = build_price_df(200, closes)
+    closes = [10000.0] * 201
+    df = build_price_df(201, closes)
     result = rank_candidates({"AAPL": df}, available_cash=0.01)
     assert len(result) == 1
     assert result[0]["position_size"] == 0
@@ -268,8 +272,8 @@ def test_rank_candidates_max_ten(symbols: list[str], available_cash: float) -> N
     price_dfs: dict[str, pd.DataFrame] = {
         sym: pd.DataFrame(
             {
-                "close": [100.0 + i for i in range(200)],
-                "volume": [1_000_000] * 200,
+                "close": [100.0 + i for i in range(201)],
+                "volume": [1_000_000] * 201,
             }
         )
         for sym in symbols

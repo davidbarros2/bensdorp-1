@@ -15,10 +15,11 @@ All DataFrames are passed in by the caller (Phase 7 scan command).
 
 from __future__ import annotations
 
-import math
 from typing import TypedDict
 
 import pandas as pd
+
+from bensdorp1.strategy.positions import compute_position_size
 
 
 class Candidate(TypedDict):
@@ -96,27 +97,30 @@ def momentum_filter(price_dfs: dict[str, pd.DataFrame]) -> list[str]:
     """Return symbols where today's close is strictly above the close 200 rows ago.
 
     STRAT-03: close_today > close_t200 (strict greater-than; equal excluded).
-    D-03: '200 trading days ago' = T-200 exclusive of today (iloc[-200]).
-    D-07: Raises ValueError if any symbol has fewer than 200 rows.
+    D-03: '200 trading days ago' = T-200 exclusive of today (iloc[-201]).
+    D-07: Raises ValueError if any symbol has fewer than 201 rows.
+
+    With 201 rows, iloc[-1] is today and iloc[-201] is 200 trading days ago,
+    giving a true 200-day look-back exclusive of today.
 
     Args:
         price_dfs: Mapping of symbol -> DataFrame with column [close],
                    indexed chronologically; last row = today.
 
     Returns:
-        List of symbols where close_today > close at index -200.
+        List of symbols where close_today > close at index -201.
 
     Raises:
-        ValueError: If any symbol's DataFrame has fewer than 200 rows.
+        ValueError: If any symbol's DataFrame has fewer than 201 rows.
     """
     result: list[str] = []
     for symbol, df in price_dfs.items():
-        if len(df) < 200:
+        if len(df) < 201:
             raise ValueError(
-                f"momentum_filter: {symbol} needs >= 200 rows; got {len(df)}"
+                f"momentum_filter: {symbol} needs >= 201 rows; got {len(df)}"
             )
         close_today: float = float(df["close"].iloc[-1])
-        close_t200: float = float(df["close"].iloc[-200])
+        close_t200: float = float(df["close"].iloc[-201])
         if close_today > close_t200:
             result.append(symbol)
     return result
@@ -130,9 +134,12 @@ def rank_candidates(
 
     STRAT-04: Candidates ranked by rate of change over 200 days.
     STRAT-05: At most 10 candidates returned.
-    D-06: position_size = floor((available_cash * 0.10) / prev_close); returns 0
-          when result is less than 1 share.
-    D-07: Raises ValueError if any symbol has fewer than 200 rows.
+    D-06: position_size = compute_position_size(available_cash, prev_close);
+          returns 0 when result is less than 1 share or prev_close <= 0.
+    D-07: Raises ValueError if any symbol has fewer than 201 rows.
+
+    With 201 rows, iloc[-1] is today and iloc[-201] is 200 trading days ago,
+    giving a true 200-day ROC exclusive of today.
 
     Args:
         price_dfs: Mapping of symbol -> DataFrame with column [close],
@@ -143,20 +150,23 @@ def rank_candidates(
         List of at most 10 Candidate dicts sorted descending by roc_200.
 
     Raises:
-        ValueError: If any symbol's DataFrame has fewer than 200 rows.
+        ValueError: If any symbol's DataFrame has fewer than 201 rows.
     """
     if not price_dfs:
         return []
     results: list[Candidate] = []
     for symbol, df in price_dfs.items():
-        if len(df) < 200:
+        if len(df) < 201:
             raise ValueError(
-                f"rank_candidates: {symbol} need >= 200 rows; got {len(df)}"
+                f"rank_candidates: {symbol} need >= 201 rows; got {len(df)}"
             )
         prev_close: float = float(df["close"].iloc[-1])
-        close_t200: float = float(df["close"].iloc[-200])
+        close_t200: float = float(df["close"].iloc[-201])
+        if close_t200 == 0.0:
+            # Skip uncomputable ROC rather than crashing the scan.
+            continue
         roc_200: float = (prev_close / close_t200) - 1.0
-        shares: int = math.floor((available_cash * 0.10) / prev_close)
+        shares: int = compute_position_size(available_cash, prev_close)
         results.append(
             {
                 "symbol": symbol,
