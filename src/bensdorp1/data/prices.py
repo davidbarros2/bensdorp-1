@@ -84,7 +84,7 @@ def _download_bulk(tickers: list[str], start: str, end: str) -> pd.DataFrame:
     )
     if df is None or df.empty:
         return pd.DataFrame()
-    stacked: pd.DataFrame = df.stack(level=1, future_stack=True)  # type: ignore[assignment]
+    stacked: pd.DataFrame = df.stack(level=1, future_stack=True)
     available = [c for c in ["Close", "Volume"] if c in stacked.columns]
     if "Close" not in available:
         return pd.DataFrame()
@@ -121,8 +121,7 @@ def _download_with_retry(
     (RESEARCH Pitfall 3: this flag is valid only for single-ticker calls).
     Sleeps between attempts, NOT after the final attempt.
     """
-    delays = BACKOFF_DELAYS[:retries]
-    for attempt, delay in enumerate(delays):
+    for attempt in range(retries):
         df = yf.download(
             ticker,
             start=start,
@@ -134,8 +133,8 @@ def _download_with_retry(
         if df is not None and not df.empty and not df["Close"].isna().all():
             result: pd.DataFrame = df[["Close", "Volume"]]
             return result
-        if attempt < len(delays) - 1:
-            time.sleep(delay)
+        if attempt < retries - 1:
+            time.sleep(BACKOFF_DELAYS[attempt])
     return pd.DataFrame()
 
 
@@ -164,7 +163,7 @@ def _stacked_to_rows(stacked: pd.DataFrame) -> list[dict[str, object]]:
                 "symbol": _to_db(str(ticker_yf)),
                 "trade_date": _ensure_utc(dt),
                 "close": float(row["Close"]),
-                "volume": int(vol_raw) if vol_raw is not None and pd.notna(vol_raw) else None,  # type: ignore[arg-type]
+                "volume": int(vol_raw) if vol_raw is not None and pd.notna(vol_raw) else None,
             }
         )
     return rows
@@ -251,7 +250,7 @@ def update_price_data(
                 AuditEventType.DATA_FETCH_FAILED,
                 symbol=_to_db(ticker),
                 payload={
-                    "retries": len(BACKOFF_DELAYS),
+                    "retries": 3,
                     "attempt_delays": BACKOFF_DELAYS,
                 },
             )
