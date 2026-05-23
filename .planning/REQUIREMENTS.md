@@ -141,30 +141,81 @@ None. This is a single-version project. v1 is the only version. Post-v1 is maint
 
 ## Traceability
 
-Populated during roadmap creation.
-
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| STRAT-01 through STRAT-10 | Phase 4 | Pending |
-| DATA-01 through DATA-10 | Phase 3 | Pending |
-| CMD-01, CMD-02 | Phases 6, 10 | Pending |
-| CMD-03 through CMD-05 | Phases 7, 9 | Pending |
-| CMD-06 through CMD-08 | Phase 8 | Pending |
-| CMD-09, CMD-10 | Phase 9 | Pending |
-| CMD-11, CMD-12 | Phase 9 | Pending |
-| CMD-13 through CMD-15 | Phase 10 | Pending |
-| CMD-16 | Phase 12 | Pending |
-| CMD-17 | Phase 1 | Pending |
-| STATE-01 through STATE-07 | Phases 2, 11, 13 | Pending |
-| UI-01 through UI-10 | Phase 5 | Pending |
-| TEST-01 through TEST-06 | Phases 1, 4, 11 | Pending |
-| REPO-01 through REPO-07 | Phases 1, 14 | Pending |
+| STRAT-01 | Phase 4: Strategy Logic | Pending |
+| STRAT-02 | Phase 4: Strategy Logic | Pending |
+| STRAT-03 | Phase 4: Strategy Logic | Pending |
+| STRAT-04 | Phase 4: Strategy Logic | Pending |
+| STRAT-05 | Phase 4: Strategy Logic | Pending |
+| STRAT-06 | Phase 4: Strategy Logic | Pending |
+| STRAT-07 | Phase 4: Strategy Logic | Pending |
+| STRAT-08 | Phase 4: Strategy Logic | Pending |
+| STRAT-09 | Phase 4: Strategy Logic | Pending |
+| STRAT-10 | Phase 4: Strategy Logic | Pending |
+| DATA-01 | Phase 3: Data Sources | Pending |
+| DATA-02 | Phase 3: Data Sources | Pending |
+| DATA-03 | Phase 3: Data Sources | Pending |
+| DATA-04 | Phase 3: Data Sources | Pending |
+| DATA-05 | Phase 3: Data Sources | Pending |
+| DATA-06 | Phase 11: Catch-Up Logic | Pending |
+| DATA-07 | Phase 3: Data Sources | Pending |
+| DATA-08 | Phase 3: Data Sources | Pending |
+| DATA-09 | Phase 3: Data Sources | Pending |
+| DATA-10 | Phase 3: Data Sources | Pending |
+| CMD-01 | Phase 6: First-Run Init Command | Pending |
+| CMD-02 | Phase 10: System Commands | Pending |
+| CMD-03 | Phase 7: Scan Command | Pending |
+| CMD-04 | Phase 9: Consultation Commands | Pending |
+| CMD-05 | Phase 9: Consultation Commands | Pending |
+| CMD-06 | Phase 8: Confirmation Commands | Pending |
+| CMD-07 | Phase 8: Confirmation Commands | Pending |
+| CMD-08 | Phase 8: Confirmation Commands | Pending |
+| CMD-09 | Phase 9: Consultation Commands | Pending |
+| CMD-10 | Phase 9: Consultation Commands | Pending |
+| CMD-11 | Phase 9: Consultation Commands | Pending |
+| CMD-12 | Phase 9: Consultation Commands | Pending |
+| CMD-13 | Phase 9: Consultation Commands | Pending |
+| CMD-14 | Phase 10: System Commands | Pending |
+| CMD-15 | Phase 10: System Commands | Pending |
+| CMD-16 | Phase 12: Validation Mode | Pending |
+| CMD-17 | Phase 1: Project Skeleton and Tooling | Pending |
+| STATE-01 | Phase 2: Database and Migrations | Pending |
+| STATE-02 | Phase 2: Database and Migrations | Pending |
+| STATE-03 | Phase 2: Database and Migrations | Pending |
+| STATE-04 | Phase 2: Database and Migrations | Pending |
+| STATE-05 | Phase 11: Catch-Up Logic | Pending |
+| STATE-06 | Phase 2: Database and Migrations | Pending |
+| STATE-07 | Phase 11: Catch-Up Logic | Pending |
+| UI-01 | Phase 5: UI Components | Pending |
+| UI-02 | Phase 5: UI Components | Pending |
+| UI-03 | Phase 5: UI Components | Pending |
+| UI-04 | Phase 5: UI Components | Pending |
+| UI-05 | Phase 5: UI Components | Pending |
+| UI-06 | Phase 5: UI Components | Pending |
+| UI-07 | Phase 5: UI Components | Pending |
+| UI-08 | Phase 5: UI Components | Pending |
+| UI-09 | Phase 5: UI Components | Pending |
+| UI-10 | Phase 5: UI Components | Pending |
+| TEST-01 | Phase 4: Strategy Logic | Pending |
+| TEST-02 | Phase 4: Strategy Logic | Pending |
+| TEST-03 | Phase 4: Strategy Logic | Pending |
+| TEST-04 | Phase 13: Edge Cases and Hardening | Pending |
+| TEST-05 | Phase 13: Edge Cases and Hardening | Pending |
+| TEST-06 | Phase 1: Project Skeleton and Tooling | Pending |
+| REPO-01 | Phase 1: Project Skeleton and Tooling | Pending |
+| REPO-02 | Phase 1: Project Skeleton and Tooling | Pending |
+| REPO-03 | Phase 1: Project Skeleton and Tooling | Pending |
+| REPO-04 | Phase 14: Documentation and Finalization | Pending |
+| REPO-05 | Phase 14: Documentation and Finalization | Pending |
+| REPO-06 | Phase 1: Project Skeleton and Tooling | Pending |
+| REPO-07 | Phase 1: Project Skeleton and Tooling | Pending |
 
 **Coverage:**
 - v1 requirements: 57 total
 - Mapped to phases: 57
-- Unmapped: 0 ✓
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-05-23*
-*Last updated: 2026-05-23 after initial definition*
+*Last updated: 2026-05-23 — traceability populated during roadmap creation*
