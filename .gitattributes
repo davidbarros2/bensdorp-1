@@ -1,0 +1,12 @@
+# Force LF line endings for all text files so ruff format is consistent
+# across Windows and Linux CI runners.
+* text=auto eol=lf
+*.py text eol=lf
+*.toml text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.md text eol=lf
+*.txt text eol=lf
+*.cfg text eol=lf
+*.ini text eol=lf
+*.json text eol=lf
