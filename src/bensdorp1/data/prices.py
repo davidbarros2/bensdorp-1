@@ -34,7 +34,8 @@ from bensdorp1.db.schema import constituents_cache, price_daily
 SPX_TICKER: str = "^GSPC"
 DEFAULT_LOOKBACK_DAYS: int = 350
 # Sleep durations between successive attempts: applied BEFORE attempts 2 and 3.
-# A 3-attempt retry loop sleeps len(BACKOFF_DELAYS) times (between attempts, not after the last).
+# A 3-attempt retry loop sleeps len(BACKOFF_DELAYS) times
+# (between attempts, not after the last).
 BACKOFF_DELAYS: list[float] = [1.0, 2.0]
 DEFAULT_REQUIRED_TRADING_DAYS: int = 220
 
@@ -163,7 +164,9 @@ def _stacked_to_rows(stacked: pd.DataFrame) -> list[dict[str, object]]:
                 "symbol": _to_db(str(ticker_yf)),
                 "trade_date": _ensure_utc(dt),
                 "close": float(row["Close"]),
-                "volume": int(vol_raw) if vol_raw is not None and pd.notna(vol_raw) else None,
+                "volume": int(vol_raw)
+                if vol_raw is not None and pd.notna(vol_raw)
+                else None,
             }
         )
     return rows
