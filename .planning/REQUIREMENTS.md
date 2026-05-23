@@ -69,7 +69,7 @@ This is a single-version project. All requirements below are v1. There is no v2 
 ### Commands — Validation and Help
 
 - [ ] **CMD-16**: `bensdorp1 validate DATE` — stateless historical verification: shows what buy candidates would have been on DATE; no state changes; validation mode banner
-- [ ] **CMD-17**: `bensdorp1 help [COMMAND]` — categorized command list or detailed help for a specific command
+- [x] **CMD-17**: `bensdorp1 help [COMMAND]` — categorized command list or detailed help for a specific command
 
 ### State Management
 
@@ -179,7 +179,7 @@ None. This is a single-version project. v1 is the only version. Post-v1 is maint
 | CMD-14 | Phase 10: System Commands | Pending |
 | CMD-15 | Phase 10: System Commands | Pending |
 | CMD-16 | Phase 12: Validation Mode | Pending |
-| CMD-17 | Phase 1: Project Skeleton and Tooling | Pending |
+| CMD-17 | Phase 1: Project Skeleton and Tooling | Complete |
 | STATE-01 | Phase 2: Database and Migrations | Pending |
 | STATE-02 | Phase 2: Database and Migrations | Pending |
 | STATE-03 | Phase 2: Database and Migrations | Pending |
