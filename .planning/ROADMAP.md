@@ -12,7 +12,7 @@ bensdorp1 is built in fourteen horizontal layers, each completing a technical st
 - Decimal phases (e.g., 2.1): Urgent insertions created via `/gsd-phase --insert`
 
 - [x] **Phase 1: Project Skeleton and Tooling** - Repo, package structure, CI, help command
-- [ ] **Phase 2: Database and Migrations** - SQLite schema, backup, audit log, state tables
+- [x] **Phase 2: Database and Migrations** - SQLite schema, backup, audit log, state tables (completed 2026-05-23)
 - [ ] **Phase 3: Data Sources** - Constituents fetch, price download, NYSE calendar, rate limiting
 - [ ] **Phase 4: Strategy Logic** - All filters, ranking, stop calculations, unit and property tests
 - [ ] **Phase 5: UI Components** - Style guide, formatting primitives, feedback thresholds, tables
@@ -92,7 +92,7 @@ bensdorp1 is built in fourteen horizontal layers, each completing a technical st
 
 **Wave 5** *(blocked on Waves 3 and 4 completion)*
 
-- [ ] 02-05-PLAN.md — db/__init__.py final re-exports + test_db_positions.py (STATE-06 IntegrityError + sequential positions)
+- [x] 02-05-PLAN.md — db/__init__.py final re-exports + test_db_positions.py (STATE-06 IntegrityError + sequential positions)
 
 **Cross-cutting constraints:** No SQLAlchemy mypy plugin; StrEnum not str+Enum; engine.dispose() in all test teardowns; shutil.copy2 not symlink for latest.db
 
@@ -270,7 +270,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Project Skeleton and Tooling | 4/4 | Complete | 2026-05-23 |
-| 2. Database and Migrations | 4/5 | In Progress|  |
+| 2. Database and Migrations | 5/5 | Complete   | 2026-05-23 |
 | 3. Data Sources | 0/TBD | Not started | - |
 | 4. Strategy Logic | 0/TBD | Not started | - |
 | 5. UI Components | 0/TBD | Not started | - |
