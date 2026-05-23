@@ -106,7 +106,7 @@ This is a single-version project. All requirements below are v1. There is no v2 
 ### Repository
 
 - [x] **REPO-01**: MIT License, public open-source repository
-- [ ] **REPO-02**: Issues disabled (config.yml); Discussions disabled; Wiki disabled
+- [x] **REPO-02**: Issues disabled (config.yml); Discussions disabled; Wiki disabled
 - [ ] **REPO-03**: PRs auto-closed via GitHub Actions workflow (close-pr.yml) with policy message
 - [ ] **REPO-04**: CONTRIBUTING.md explicitly stating no contributions accepted (no PRs, no issues, no feature requests)
 - [ ] **REPO-05**: README with installation, usage, CI badge, license badge, clear "no contributions" statement
@@ -204,7 +204,7 @@ None. This is a single-version project. v1 is the only version. Post-v1 is maint
 | TEST-05 | Phase 13: Edge Cases and Hardening | Pending |
 | TEST-06 | Phase 1: Project Skeleton and Tooling | Complete |
 | REPO-01 | Phase 1: Project Skeleton and Tooling | Complete |
-| REPO-02 | Phase 1: Project Skeleton and Tooling | Pending |
+| REPO-02 | Phase 1: Project Skeleton and Tooling | Complete |
 | REPO-03 | Phase 1: Project Skeleton and Tooling | Pending |
 | REPO-04 | Phase 14: Documentation and Finalization | Pending |
 | REPO-05 | Phase 14: Documentation and Finalization | Pending |
