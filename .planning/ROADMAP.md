@@ -146,7 +146,7 @@ bensdorp1 is built in fourteen horizontal layers, each completing a technical st
 
 **Wave 1** — Screening functions
 
-- [ ] 04-01-PLAN.md — strategy/ subpackage: screening.py (regime_filter, liquidity_filter, momentum_filter, rank_candidates + Candidate TypedDict) + __init__.py (partial) + test_screening.py
+- [x] 04-01-PLAN.md — strategy/ subpackage: screening.py (regime_filter, liquidity_filter, momentum_filter, rank_candidates + Candidate TypedDict) + __init__.py (partial) + test_screening.py
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
@@ -305,7 +305,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | 1. Project Skeleton and Tooling | 4/4 | Complete | 2026-05-23 |
 | 2. Database and Migrations | 5/5 | Complete    | 2026-05-23 |
 | 3. Data Sources | 4/4 | Complete    | 2026-05-23 |
-| 4. Strategy Logic | 0/3 | Not started | - |
+| 4. Strategy Logic | 1/3 | In Progress|  |
 | 5. UI Components | 0/TBD | Not started | - |
 | 6. First-Run Init Command | 0/TBD | Not started | - |
 | 7. Scan Command | 0/TBD | Not started | - |
