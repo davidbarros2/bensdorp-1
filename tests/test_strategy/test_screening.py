@@ -4,7 +4,8 @@ Pure computation — no db_engine fixture needed. DataFrames constructed inline.
 No yfinance or DB — DataFrames constructed in-test from synthetic data.
 
 Covers: regime_filter, liquidity_filter, momentum_filter, rank_candidates.
-Hypothesis invariants: 3 (rank_candidates <= 10) and 4 (regime_filter False when close <= SMA 200).
+Hypothesis invariants: 3 (rank_candidates <= 10) and 4 (regime_filter False when
+close <= SMA 200).
 """
 
 import pandas as pd
@@ -13,14 +14,15 @@ from hypothesis import given, settings
 from hypothesis import strategies as st
 
 from bensdorp1.strategy.screening import (
-    Candidate,
     liquidity_filter,
     momentum_filter,
     rank_candidates,
     regime_filter,
 )
 
-_price_st = st.floats(min_value=0.01, max_value=10000, allow_nan=False, allow_infinity=False)
+_price_st = st.floats(
+    min_value=0.01, max_value=10000, allow_nan=False, allow_infinity=False
+)
 
 
 def build_price_df(
@@ -59,7 +61,7 @@ def test_regime_filter_off() -> None:
 
 
 def test_regime_filter_boundary() -> None:
-    """Returns False when today's close equals SMA 200 (strict greater-than required)."""
+    """Returns False when close equals SMA 200 (strict greater-than required)."""
     values = [100.0] * 200
     series = pd.Series(values, dtype=float)
     # close == sma200 == 100.0; strict > is False
@@ -125,9 +127,7 @@ def test_liquidity_filter_insufficient() -> None:
 
 
 def test_liquidity_filter_nan_volume() -> None:
-    """Excludes symbols whose 20-day volume window contains NaN (conservative behavior)."""
-    import numpy as np
-
+    """Excludes symbols with NaN in the 20-day volume window (conservative behavior)."""
     # Two symbols: one with valid volume, one with NaN in the 20-day window
     def make_valid_df() -> pd.DataFrame:
         return pd.DataFrame(
@@ -159,7 +159,7 @@ def test_liquidity_filter_nan_volume() -> None:
 
 
 def test_momentum_filter_pass() -> None:
-    """Includes symbol when today's close is strictly above close 200 trading days ago."""
+    """Includes symbol when today's close is strictly above close 200 days ago."""
     # 201 rows: iloc[-201]=100.0 (T-200), iloc[-1]=150.0 (today)
     closes = [100.0] * 200 + [150.0]  # 201 rows; close[-1]=150 > close[-201]=100
     df = build_price_df(201, closes)
@@ -177,7 +177,7 @@ def test_momentum_filter_reject() -> None:
 
 
 def test_momentum_filter_boundary() -> None:
-    """Excludes symbol when today's close equals close 200 trading days ago (strict > required)."""
+    """Excludes symbol when today's close equals close 200 days ago (strict >)."""
     closes = [100.0] * 201  # close[-1] == close[-201] == 100.0
     df = build_price_df(201, closes)
     result = momentum_filter({"AAPL": df})
@@ -277,7 +277,7 @@ def test_rank_candidates_skip_zero_close_t200() -> None:
 )
 @settings(max_examples=200)
 def test_rank_candidates_max_ten(symbols: list[str], available_cash: float) -> None:
-    """rank_candidates never returns more than 10 candidates regardless of input size."""
+    """rank_candidates never returns more than 10 candidates regardless of input."""
     price_dfs: dict[str, pd.DataFrame] = {
         sym: pd.DataFrame(
             {
