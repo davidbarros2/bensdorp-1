@@ -1,23 +1,23 @@
 ---
 phase: 04-strategy-logic
-fixed_at: 2026-05-23T19:10:00Z
+fixed_at: 2026-05-23T19:30:00Z
 review_path: .planning/phases/04-strategy-logic/04-REVIEW.md
 iteration: 1
-findings_in_scope: 7
-fixed: 7
+findings_in_scope: 9
+fixed: 9
 skipped: 0
 status: all_fixed
 ---
 
 # Phase 04: Code Review Fix Report
 
-**Fixed at:** 2026-05-23T19:10:00Z
+**Fixed at:** 2026-05-23T19:30:00Z
 **Source review:** .planning/phases/04-strategy-logic/04-REVIEW.md
 **Iteration:** 1
 
 **Summary:**
-- Findings in scope: 7
-- Fixed: 7
+- Findings in scope: 9
+- Fixed: 9
 - Skipped: 0
 
 ## Fixed Issues
@@ -78,12 +78,28 @@ status: all_fixed
 
 ---
 
+### IN-01: `_to_db` uses unconditional `.replace("-", ".")` which corrupts tickers that legitimately contain hyphens in DB form
+
+**Files modified:** `src/bensdorp1/data/prices.py`
+**Commit:** d2c348f
+**Applied fix:** Expanded the `_to_db` docstring to document the assumption explicitly: all hyphens in yfinance ticker names represent periods in the exchange/DB canonical form, and this holds for all current S&P 500 constituents. The implementation is unchanged; the fix makes the latent assumption visible to future maintainers.
+
+---
+
+### IN-02: `test_regime_off_when_close_le_sma200` Hypothesis test has a conditional assertion that silently passes when the invariant is not exercised
+
+**Files modified:** `tests/test_strategy/test_screening.py`
+**Commit:** 65601d7
+**Applied fix:** Replaced the `if today_close <= sma200: assert result is False` conditional with an unconditional `assert result is False`. Added a comment explaining that the input is always constructed to be bearish, making the guard redundant. This prevents a future refactor from accidentally removing the bearish construction and causing the test to pass vacuously.
+
+---
+
 ## Skipped Issues
 
 None — all findings were fixed.
 
 ---
 
-_Fixed: 2026-05-23T19:10:00Z_
+_Fixed: 2026-05-23T19:30:00Z_
 _Fixer: Claude (gsd-code-fixer)_
 _Iteration: 1_
