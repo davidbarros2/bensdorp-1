@@ -61,7 +61,24 @@ bensdorp1 is built in fourteen horizontal layers, each completing a technical st
   2. A state-changing operation triggers `sqlite3.Connection.backup()` and produces a timestamped file under `~/bensdorp1/backups/` plus updates `bensdorp1-latest.db`
   3. Each of the 17 audit event types can be inserted and queried from the audit log table without errors
   4. Sequential positions in the same symbol are allowed; simultaneous positions in the same symbol are rejected with a clear error
-**Plans**: TBD
+**Plans**: 5 plans in 5 waves
+
+**Wave 1** — Schema foundation
+- [ ] 02-01-PLAN.md — db/ subpackage + schema.py: all 7 tables, all indexes including ix_positions_open_symbol partial unique index
+
+**Wave 2** *(blocked on Wave 1 completion)*
+- [ ] 02-02-PLAN.md — engine.py (lazy-cached Engine, BENSDORP1_HOME resolution, run_migrations) + conftest.py + test_db_schema.py + test_db_engine.py
+
+**Wave 3** *(blocked on Wave 2 completion)*
+- [ ] 02-03-PLAN.md — backup.py (sqlite3.Connection.backup(), shutil.copy2 for latest.db) + test_db_backup.py
+
+**Wave 4** *(blocked on Wave 2 completion)*
+- [ ] 02-04-PLAN.md — audit.py (AuditEventType StrEnum 17 members + log_event()) + test_db_audit.py
+
+**Wave 5** *(blocked on Waves 3 and 4 completion)*
+- [ ] 02-05-PLAN.md — db/__init__.py final re-exports + test_db_positions.py (STATE-06 IntegrityError + sequential positions)
+
+**Cross-cutting constraints:** No SQLAlchemy mypy plugin; StrEnum not str+Enum; engine.dispose() in all test teardowns; shutil.copy2 not symlink for latest.db
 
 ### Phase 3: Data Sources
 **Goal**: The data layer can fetch S&P 500 constituents, cross-check them, download price history, and apply all data-quality rules reliably
@@ -201,7 +218,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Project Skeleton and Tooling | 4/4 | Complete | 2026-05-23 |
-| 2. Database and Migrations | 0/TBD | Not started | - |
+| 2. Database and Migrations | 0/5 | Not started | - |
 | 3. Data Sources | 0/TBD | Not started | - |
 | 4. Strategy Logic | 0/TBD | Not started | - |
 | 5. UI Components | 0/TBD | Not started | - |
