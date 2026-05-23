@@ -96,9 +96,7 @@ def _download_bulk(tickers: list[str], start: str, end: str) -> pd.DataFrame:
     return stacked[available]
 
 
-def _find_failed_tickers(
-    stacked: pd.DataFrame, expected: set[str]
-) -> set[str]:
+def _find_failed_tickers(stacked: pd.DataFrame, expected: set[str]) -> set[str]:
     """Return tickers with all-NaN Close or entirely absent from stacked result.
 
     Failed bulk downloads appear as all-NaN rows — NOT as absent tickers
@@ -177,9 +175,7 @@ def _stacked_to_rows(stacked: pd.DataFrame) -> list[dict[str, object]]:
     return rows
 
 
-def _per_symbol_to_rows(
-    ticker_db: str, df: pd.DataFrame
-) -> list[dict[str, object]]:
+def _per_symbol_to_rows(ticker_db: str, df: pd.DataFrame) -> list[dict[str, object]]:
     """Convert single-ticker flat DataFrame to list of price row dicts.
 
     ticker_db is already in DB period form (caller passes _to_db(ticker_yf)).
@@ -214,8 +210,10 @@ def _persist_price_rows(engine: Engine, rows: list[dict[str, object]]) -> None:
     if not rows:
         return
     with engine.connect() as conn:
-        stmt = sqlite_insert(price_daily).values(rows).on_conflict_do_nothing(
-            index_elements=["symbol", "trade_date"]
+        stmt = (
+            sqlite_insert(price_daily)
+            .values(rows)
+            .on_conflict_do_nothing(index_elements=["symbol", "trade_date"])
         )
         conn.execute(stmt)
         conn.commit()
@@ -237,9 +235,7 @@ def update_price_data(
     if start is None and end is None:
         start, end = _default_date_range()
     elif start is None or end is None:
-        raise ValueError(
-            "update_price_data requires both start and end, or neither."
-        )
+        raise ValueError("update_price_data requires both start and end, or neither.")
 
     # D-04: ^GSPC ALWAYS included regardless of constituents list
     db_set: set[str] = set(symbols) | {SPX_TICKER}
@@ -303,7 +299,5 @@ def check_price_coverage(
             .having(func.count(price_daily.c.id) >= required_days)
             .subquery()
         )
-        covered: int = conn.execute(
-            select(func.count()).select_from(subq)
-        ).scalar_one()
+        covered: int = conn.execute(select(func.count()).select_from(subq)).scalar_one()
     return (covered, total)

@@ -35,9 +35,7 @@ def _make_bulk_df(
     Indexed by pd.DatetimeIndex(dates, tz="UTC").
     Closes/volumes may contain np.nan to simulate failed tickers.
     """
-    index = pd.DatetimeIndex(
-        [pd.Timestamp(d, tz="UTC") for d in dates], name="Date"
-    )
+    index = pd.DatetimeIndex([pd.Timestamp(d, tz="UTC") for d in dates], name="Date")
     col_tuples = [(field, tkr) for tkr in tickers for field in ("Close", "Volume")]
     columns = pd.MultiIndex.from_tuples(col_tuples, names=["Price", "Ticker"])
     data: dict[tuple[str, str], object] = {}
@@ -57,9 +55,7 @@ def _make_single_df(
 
     Simulates yfinance single-ticker download (multi_level_index=False).
     """
-    index = pd.DatetimeIndex(
-        [pd.Timestamp(d, tz="UTC") for d in dates], name="Date"
-    )
+    index = pd.DatetimeIndex([pd.Timestamp(d, tz="UTC") for d in dates], name="Date")
     return pd.DataFrame({"Close": closes, "Volume": volumes}, index=index)
 
 
@@ -258,9 +254,7 @@ def test_failed_ticker_exhausts_retries_emits_audit(db_engine: Engine) -> None:
     # Audit event emitted for DEADCO
     with db_engine.connect() as conn:
         rows = conn.execute(
-            select(audit_log).where(
-                audit_log.c.event_type == "data_fetch_failed"
-            )
+            select(audit_log).where(audit_log.c.event_type == "data_fetch_failed")
         ).fetchall()
     assert len(rows) == 1, "Expected exactly 1 DATA_FETCH_FAILED audit event"
     assert rows[0].symbol == "DEADCO", "Expected DB period form in audit event"
@@ -319,9 +313,9 @@ def test_rerun_idempotent_no_duplicates(db_engine: Engine) -> None:
         update_price_data(db_engine, ["AAPL"])
     with db_engine.connect() as conn:
         count = conn.execute(
-            select(func.count()).select_from(price_daily).where(
-                price_daily.c.symbol == "AAPL"
-            )
+            select(func.count())
+            .select_from(price_daily)
+            .where(price_daily.c.symbol == "AAPL")
         ).scalar_one()
     assert count == 2, f"Expected 2 rows (no duplicates), got {count}"
 
@@ -334,10 +328,7 @@ def test_rerun_idempotent_no_duplicates(db_engine: Engine) -> None:
 def _populate_constituents(engine: Engine, symbols: list[str]) -> None:
     """Insert symbols into constituents_cache for coverage tests."""
     now = datetime.now(UTC)
-    rows = [
-        {"symbol": sym, "company_name": sym, "fetched_at": now}
-        for sym in symbols
-    ]
+    rows = [{"symbol": sym, "company_name": sym, "fetched_at": now} for sym in symbols]
     with engine.connect() as conn:
         conn.execute(insert(constituents_cache), rows)
         conn.commit()
@@ -351,9 +342,7 @@ def _populate_price_rows(
     rows = [
         {
             "symbol": symbol,
-            "trade_date": datetime(
-                ref.year, ref.month, ref.day, tzinfo=UTC
-            )
+            "trade_date": datetime(ref.year, ref.month, ref.day, tzinfo=UTC)
             + timedelta(days=i),
             "close": 100.0 + i,
             "volume": 1000,

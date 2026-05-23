@@ -149,9 +149,7 @@ def test_refresh_silent_when_discrepancy_le_3(db_engine: Engine) -> None:
             )
         ).fetchall()
         updated_rows = conn.execute(
-            select(audit_log).where(
-                audit_log.c.event_type == "constituents_updated"
-            )
+            select(audit_log).where(audit_log.c.event_type == "constituents_updated")
         ).fetchall()
     assert len(cache_rows) == 3
     assert len(disc_rows) == 0
@@ -174,8 +172,16 @@ def test_refresh_warn_when_discrepancy_4_to_10(db_engine: Engine) -> None:
     }
     # Slickcharts matches 5 of wikipedia's, adds 5 different → symmetric diff = 10
     slack = {
-        "AAPL", "MSFT", "GOOG", "AMZN", "META",
-        "BRK.B", "UNH", "JNJ", "XOM", "PG",
+        "AAPL",
+        "MSFT",
+        "GOOG",
+        "AMZN",
+        "META",
+        "BRK.B",
+        "UNH",
+        "JNJ",
+        "XOM",
+        "PG",
     }
     with (
         patch.object(constituents_module, "_fetch_wikipedia", return_value=wiki),
@@ -234,9 +240,7 @@ def test_get_constituents_skips_fetch_when_cache_fresh(db_engine: Engine) -> Non
             )
         )
         conn.commit()
-    with patch.object(
-        constituents_module, "refresh_constituents"
-    ) as mock_refresh:
+    with patch.object(constituents_module, "refresh_constituents") as mock_refresh:
         result = get_constituents(db_engine)
     mock_refresh.assert_not_called()
     assert result == {"AAPL": "Apple Inc."}

@@ -47,9 +47,7 @@ def regime_filter(spx_closes: pd.Series[float]) -> bool:
         ValueError: If len(spx_closes) < 200.
     """
     if len(spx_closes) < 200:
-        raise ValueError(
-            f"regime_filter: need >= 200 closes; got {len(spx_closes)}"
-        )
+        raise ValueError(f"regime_filter: need >= 200 closes; got {len(spx_closes)}")
     sma200: float = float(spx_closes.iloc[-200:].mean())
     today_close: float = float(spx_closes.iloc[-1])
     return today_close > sma200

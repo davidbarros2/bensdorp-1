@@ -111,9 +111,7 @@ def _fetch_slickcharts(client: httpx.Client) -> set[str]:
 def _is_cache_stale(engine: Engine) -> bool:
     """Return True if constituents_cache is empty or last fetch was > 7 days ago."""
     with engine.connect() as conn:
-        row = conn.execute(
-            select(func.max(constituents_cache.c.fetched_at))
-        ).fetchone()
+        row = conn.execute(select(func.max(constituents_cache.c.fetched_at))).fetchone()
     if row is None or row[0] is None:
         return True
     latest = row[0]
