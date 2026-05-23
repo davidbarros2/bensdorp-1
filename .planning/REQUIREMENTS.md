@@ -73,12 +73,12 @@ This is a single-version project. All requirements below are v1. There is no v2 
 
 ### State Management
 
-- [ ] **STATE-01**: SQLite database at ~/bensdorp1/data/bensdorp1.db (overridable via BENSDORP1_HOME env var)
+- [x] **STATE-01**: SQLite database at ~/bensdorp1/data/bensdorp1.db (overridable via BENSDORP1_HOME env var)
 - [ ] **STATE-02**: Automatic backup after every state-changing operation using sqlite3.Connection.backup() API (not file copy)
 - [ ] **STATE-03**: Timestamped backup snapshots in ~/bensdorp1/backups/ — never auto-deleted; bensdorp1-latest.db always the most recent
 - [ ] **STATE-04**: Structured audit log with all 17 event types (system_initialized, scan_performed, buy_confirmed, sell_confirmed, sell_manual, transaction_corrected, cash_updated, constituents_updated, constituents_discrepancy, split_applied, position_delisted_from_index, regime_change_bull_to_bear, regime_change_bear_to_bull, data_fetch_failed, catch_up_performed, restore_performed, position_closed_manual)
 - [ ] **STATE-05**: Catch-up logic for absences ≥ 2 trading days: reconstruct state (highest_close, trailing_stop) for all open positions over the missed days; surface 13 defined event templates
-- [ ] **STATE-06**: Multiple positions in same symbol allowed sequentially; no simultaneous open positions in same symbol
+- [x] **STATE-06**: Multiple positions in same symbol allowed sequentially; no simultaneous open positions in same symbol
 - [ ] **STATE-07**: Stocks delisted from S&P 500 while held — keep position open, continue stop monitoring, exclude from buy candidates
 
 ### UI and Output
@@ -180,12 +180,12 @@ None. This is a single-version project. v1 is the only version. Post-v1 is maint
 | CMD-15 | Phase 10: System Commands | Pending |
 | CMD-16 | Phase 12: Validation Mode | Pending |
 | CMD-17 | Phase 1: Project Skeleton and Tooling | Complete |
-| STATE-01 | Phase 2: Database and Migrations | Pending |
+| STATE-01 | Phase 2: Database and Migrations | Complete |
 | STATE-02 | Phase 2: Database and Migrations | Pending |
 | STATE-03 | Phase 2: Database and Migrations | Pending |
 | STATE-04 | Phase 2: Database and Migrations | Pending |
 | STATE-05 | Phase 11: Catch-Up Logic | Pending |
-| STATE-06 | Phase 2: Database and Migrations | Pending |
+| STATE-06 | Phase 2: Database and Migrations | Complete |
 | STATE-07 | Phase 11: Catch-Up Logic | Pending |
 | UI-01 | Phase 5: UI Components | Pending |
 | UI-02 | Phase 5: UI Components | Pending |

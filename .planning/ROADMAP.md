@@ -64,7 +64,7 @@ bensdorp1 is built in fourteen horizontal layers, each completing a technical st
 **Plans**: 5 plans in 5 waves
 
 **Wave 1** — Schema foundation
-- [ ] 02-01-PLAN.md — db/ subpackage + schema.py: all 7 tables, all indexes including ix_positions_open_symbol partial unique index
+- [x] 02-01-PLAN.md — db/ subpackage + schema.py: all 7 tables, all indexes including ix_positions_open_symbol partial unique index
 
 **Wave 2** *(blocked on Wave 1 completion)*
 - [ ] 02-02-PLAN.md — engine.py (lazy-cached Engine, BENSDORP1_HOME resolution, run_migrations) + conftest.py + test_db_schema.py + test_db_engine.py
@@ -218,7 +218,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Project Skeleton and Tooling | 4/4 | Complete | 2026-05-23 |
-| 2. Database and Migrations | 0/5 | Not started | - |
+| 2. Database and Migrations | 1/5 | In Progress|  |
 | 3. Data Sources | 0/TBD | Not started | - |
 | 4. Strategy Logic | 0/TBD | Not started | - |
 | 5. UI Components | 0/TBD | Not started | - |
