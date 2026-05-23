@@ -64,7 +64,10 @@ def _fetch_wikipedia(client: httpx.Client) -> dict[str, str]:
     if table is None:
         raise ValueError("Wikipedia S&P 500 wikitable not found")
     result: dict[str, str] = {}
-    for row in table.find("tbody").find_all("tr"):  # type: ignore[union-attr]
+    tbody = table.find("tbody")
+    if tbody is None:
+        raise ValueError("Wikipedia S&P 500 wikitable has no tbody")
+    for row in tbody.find_all("tr"):
         cells = row.find_all("td")
         if len(cells) >= 2:
             symbol = cells[0].get_text(strip=True)
