@@ -47,6 +47,13 @@ def test_compute_position_size_zero() -> None:
     assert isinstance(result, int)
 
 
+def test_compute_position_size_zero_price() -> None:
+    """Returns 0 when prev_close <= 0.0 (CR-02 guard against division by zero)."""
+    result = compute_position_size(100_000.0, 0.0)
+    assert result == 0
+    assert isinstance(result, int)
+
+
 def test_compute_position_size_boundary() -> None:
     """cash=100.0, prev_close=10.0 yields 1 share (floor(10.0/10.0) = 1)."""
     result = compute_position_size(100.0, 10.0)

@@ -249,6 +249,15 @@ def test_rank_candidates_zero_position_size() -> None:
     assert result[0]["position_size"] == 0
 
 
+def test_rank_candidates_skip_zero_close_t200() -> None:
+    """Excludes symbol when close_t200 == 0.0 (CR-01 guard — uncomputable ROC)."""
+    # First row is T-200; iloc[-201] = 0.0 makes ROC undefined — symbol skipped.
+    closes = [0.0] + [100.0] * 199 + [150.0]
+    df = build_price_df(201, closes)
+    result = rank_candidates({"ZERO": df}, available_cash=100_000.0)
+    assert result == []
+
+
 # --- Hypothesis property tests ---
 
 
