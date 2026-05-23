@@ -33,6 +33,7 @@ dev = [
     "ruff>=0.15",
     "mypy>=2.1.0",
     "lxml-stubs>=0.5.1",
+    "pandas-stubs>=3.0.0.260204",
 ]
 
 [tool.ruff]
