@@ -296,7 +296,7 @@ def test_regime_off_when_close_le_sma200(values: list[float]) -> None:
     sma200 = float(series.iloc[-200:].mean())
     today_close = float(series.iloc[-1])
     result = regime_filter(series)
-    if today_close <= sma200:
-        assert result is False, (
-            f"regime_filter returned True but {today_close} <= {sma200}"
-        )
+    # The input is constructed to always be bearish; assert unconditionally.
+    assert result is False, (
+        f"regime_filter returned True but {today_close} <= {sma200}"
+    )
