@@ -14,7 +14,9 @@ from bensdorp1.db.schema import audit_log
 
 
 @pytest.mark.parametrize("event_type", list(AuditEventType))
-def test_all_event_types_insertable(db_engine: Engine, event_type: AuditEventType) -> None:
+def test_all_event_types_insertable(
+    db_engine: Engine, event_type: AuditEventType
+) -> None:
     log_event(db_engine, event_type)
     with db_engine.connect() as conn:
         row = conn.execute(

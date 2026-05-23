@@ -8,7 +8,6 @@ import re
 import sqlite3
 from pathlib import Path
 
-import pytest
 from sqlalchemy.engine import Engine
 
 from bensdorp1.db.backup import create_backup
