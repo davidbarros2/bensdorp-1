@@ -13,7 +13,8 @@ bensdorp1 is built in fourteen horizontal layers, each completing a technical st
 
 - [x] **Phase 1: Project Skeleton and Tooling** - Repo, package structure, CI, help command
 - [x] **Phase 2: Database and Migrations** - SQLite schema, backup, audit log, state tables (completed 2026-05-23)
-- [x] **Phase 3: Data Sources** - Constituents fetch, price download, NYSE calendar, rate limiting (completed 2026-05-23)
+- [x] **Phase 3: Data Sources** - Constituents fetch, price download, NYSE calendar, rate limiting
+ (completed 2026-05-23)
 - [ ] **Phase 4: Strategy Logic** - All filters, ranking, stop calculations, unit and property tests
 - [ ] **Phase 5: UI Components** - Style guide, formatting primitives, feedback thresholds, tables
 - [ ] **Phase 6: First-Run Init Command** - `init` — directory tree, DB creation, history download, cash declaration
@@ -141,7 +142,21 @@ bensdorp1 is built in fourteen horizontal layers, each completing a technical st
   4. Hypothesis property tests verify: effective_stop >= initial_stop always, trailing stop never decreases, no buy candidates are generated when regime filter is off, and maximum 10 positions are ever open simultaneously
   5. `pytest --cov=strategy` reports >95% line coverage; `pytest --cov` on all modules reports >90%
 
-**Plans**: TBD
+**Plans**: 3 plans in 3 waves
+
+**Wave 1** — Screening functions
+
+- [ ] 04-01-PLAN.md — strategy/ subpackage: screening.py (regime_filter, liquidity_filter, momentum_filter, rank_candidates + Candidate TypedDict) + __init__.py (partial) + test_screening.py
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
+- [ ] 04-02-PLAN.md — positions.py (compute_position_size, compute_initial_stop, update_highest_close, compute_trailing_stop, compute_effective_stop, is_exit_triggered) + test_positions.py + __init__.py (final)
+
+**Wave 3** *(blocked on Waves 1 and 2 completion)*
+
+- [ ] 04-03-PLAN.md — Full verification gate: coverage >= 95% strategy/, >= 90% all modules, mypy strict, ruff, public API contract
+
+**Cross-cutting constraints:** No imports from db/ or data/ in strategy/ (D-02); pd.Series[float] not bare pd.Series (mypy strict); math.floor not int() for position sizing; Hypothesis max_examples=500 for invariants 1/2/4, 200 for invariant 3
 
 ### Phase 5: UI Components
 
@@ -290,7 +305,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | 1. Project Skeleton and Tooling | 4/4 | Complete | 2026-05-23 |
 | 2. Database and Migrations | 5/5 | Complete    | 2026-05-23 |
 | 3. Data Sources | 4/4 | Complete    | 2026-05-23 |
-| 4. Strategy Logic | 0/TBD | Not started | - |
+| 4. Strategy Logic | 0/3 | Not started | - |
 | 5. UI Components | 0/TBD | Not started | - |
 | 6. First-Run Init Command | 0/TBD | Not started | - |
 | 7. Scan Command | 0/TBD | Not started | - |
