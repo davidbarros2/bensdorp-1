@@ -24,19 +24,19 @@ config: Table = Table(
     metadata,
     Column("key", Text, primary_key=True),
     Column("value", Text, nullable=True),
-    Column("updated_at", DateTime, nullable=False),
+    Column("updated_at", DateTime(timezone=True), nullable=False),
 )
 
 scans: Table = Table(
     "scans",
     metadata,
     Column("id", Integer, primary_key=True, autoincrement=True),
-    Column("scan_date", DateTime, nullable=False, unique=True),
+    Column("scan_date", DateTime(timezone=True), nullable=False, unique=True),
     Column("regime_active", Boolean, nullable=False),
     Column("candidate_count", Integer, nullable=False),
     Column("exit_trigger_count", Integer, nullable=False),
     Column("raw_output", Text, nullable=True),
-    Column("created_at", DateTime, nullable=False),
+    Column("created_at", DateTime(timezone=True), nullable=False),
 )
 
 positions: Table = Table(
@@ -44,14 +44,14 @@ positions: Table = Table(
     metadata,
     Column("id", Integer, primary_key=True, autoincrement=True),
     Column("symbol", Text, nullable=False),
-    Column("entry_date", DateTime, nullable=False),
+    Column("entry_date", DateTime(timezone=True), nullable=False),
     Column("entry_close", Float, nullable=False),
     Column("shares", Integer, nullable=False),
     Column("initial_stop", Float, nullable=False),
     Column("highest_close", Float, nullable=False),
     Column("trailing_stop", Float, nullable=False),
     Column("scan_id", Integer, ForeignKey("scans.id"), nullable=True),
-    Column("closed_at", DateTime, nullable=True),
+    Column("closed_at", DateTime(timezone=True), nullable=True),
     Column("exit_price", Float, nullable=True),
     Column("realized_pnl", Float, nullable=True),
 )
@@ -67,7 +67,7 @@ audit_log: Table = Table(
     metadata,
     Column("id", Integer, primary_key=True, autoincrement=True),
     Column("event_type", Text, nullable=False),
-    Column("occurred_at", DateTime, nullable=False),
+    Column("occurred_at", DateTime(timezone=True), nullable=False),
     Column("symbol", Text, nullable=True),
     Column("payload", Text, nullable=True),
 )
@@ -86,6 +86,18 @@ scan_candidates: Table = Table(
     Column("close", Float, nullable=False),
     Column("suggested_shares", Integer, nullable=False),
 )
+Index(
+    "ix_scan_candidates_scan_rank",
+    scan_candidates.c.scan_id,
+    scan_candidates.c.rank,
+    unique=True,
+)
+Index(
+    "ix_scan_candidates_scan_symbol",
+    scan_candidates.c.scan_id,
+    scan_candidates.c.symbol,
+    unique=True,
+)
 
 constituents_cache: Table = Table(
     "constituents_cache",
@@ -93,7 +105,7 @@ constituents_cache: Table = Table(
     Column("id", Integer, primary_key=True, autoincrement=True),
     Column("symbol", Text, nullable=False, unique=True),
     Column("company_name", Text, nullable=True),
-    Column("fetched_at", DateTime, nullable=False),
+    Column("fetched_at", DateTime(timezone=True), nullable=False),
 )
 
 price_daily: Table = Table(
@@ -101,7 +113,7 @@ price_daily: Table = Table(
     metadata,
     Column("id", Integer, primary_key=True, autoincrement=True),
     Column("symbol", Text, nullable=False),
-    Column("trade_date", DateTime, nullable=False),
+    Column("trade_date", DateTime(timezone=True), nullable=False),
     Column("close", Float, nullable=False),
     Column("volume", Integer, nullable=True),
 )
