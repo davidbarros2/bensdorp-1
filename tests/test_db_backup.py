@@ -14,7 +14,7 @@ from bensdorp1.db.backup import create_backup
 
 
 def test_backup_creates_timestamped_file(db_engine: Engine, tmp_path: Path) -> None:
-    """Backup file exists and its name matches bensdorp1-{8digits}T{6digits}_{6digits}Z.db."""
+    """Backup file exists with name matching bensdorp1-{date}T{time}_{us}Z.db."""
     backups_dir = tmp_path / "backups"
     result = create_backup(db_engine, backups_dir)
 

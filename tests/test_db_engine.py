@@ -44,7 +44,7 @@ def test_run_migrations_idempotent(db_engine: Engine) -> None:
 
 
 def test_get_engine_returns_cached_singleton(tmp_path: Path) -> None:
-    """get_engine() returns the same Engine object on repeated calls regardless of path."""
+    """get_engine() returns the same Engine object on repeated calls."""
     engine_module._reset_engine_for_testing()
     try:
         e1 = engine_module.get_engine(tmp_path / "a.db")
