@@ -84,11 +84,11 @@ bensdorp1 is built in fourteen horizontal layers, each completing a technical st
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
-- [ ] 02-03-PLAN.md — backup.py (sqlite3.Connection.backup(), shutil.copy2 for latest.db) + test_db_backup.py
+- [x] 02-03-PLAN.md — backup.py (sqlite3.Connection.backup(), shutil.copy2 for latest.db) + test_db_backup.py
 
 **Wave 4** *(blocked on Wave 2 completion)*
 
-- [ ] 02-04-PLAN.md — audit.py (AuditEventType StrEnum 17 members + log_event()) + test_db_audit.py
+- [x] 02-04-PLAN.md — audit.py (AuditEventType StrEnum 17 members + log_event()) + test_db_audit.py
 
 **Wave 5** *(blocked on Waves 3 and 4 completion)*
 
@@ -270,7 +270,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Project Skeleton and Tooling | 4/4 | Complete | 2026-05-23 |
-| 2. Database and Migrations | 2/5 | In Progress|  |
+| 2. Database and Migrations | 4/5 | In Progress|  |
 | 3. Data Sources | 0/TBD | Not started | - |
 | 4. Strategy Logic | 0/TBD | Not started | - |
 | 5. UI Components | 0/TBD | Not started | - |
