@@ -14,14 +14,14 @@ from bensdorp1.db.backup import create_backup
 
 
 def test_backup_creates_timestamped_file(db_engine: Engine, tmp_path: Path) -> None:
-    """Backup file exists and its name matches bensdorp1-{8digits}T{6digits}Z.db."""
+    """Backup file exists and its name matches bensdorp1-{8digits}T{6digits}_{6digits}Z.db."""
     backups_dir = tmp_path / "backups"
     result = create_backup(db_engine, backups_dir)
 
     assert result.exists()
     assert result.name.startswith("bensdorp1-")
     assert result.suffix == ".db"
-    assert re.match(r"bensdorp1-\d{8}T\d{6}Z\.db", result.name) is not None
+    assert re.match(r"bensdorp1-\d{8}T\d{6}_\d{6}Z\.db", result.name) is not None
 
 
 def test_backup_creates_backups_dir(db_engine: Engine, tmp_path: Path) -> None:
