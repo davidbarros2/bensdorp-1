@@ -11,8 +11,10 @@ import math
 def compute_position_size(available_cash: float, prev_close: float) -> int:
     """Return shares to buy: floor((cash * 0.10) / prev_close).
 
-    Returns 0 when result < 1 (D-06).
+    Returns 0 when result < 1 (D-06) or when prev_close <= 0 (degenerate row).
     """
+    if prev_close <= 0.0:
+        return 0
     return math.floor((available_cash * 0.10) / prev_close)
 
 
