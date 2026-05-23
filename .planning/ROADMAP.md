@@ -108,7 +108,25 @@ bensdorp1 is built in fourteen horizontal layers, each completing a technical st
   3. Tickers are stored in period form (`BRK.B`) and converted to hyphen form (`BRK-B`) only at the yfinance call site; this conversion is the sole place normalization occurs
   4. A failed download retries with exponential backoff (1 s, 2 s, 4 s); if fewer than 95% of constituents have price data, the scan is aborted with a clear error
 
-**Plans**: TBD
+**Plans**: 4 plans in 4 waves
+
+**Wave 1** — Foundation
+
+- [ ] 03-01-PLAN.md — pyproject.toml updates (lxml-stubs + mypy overrides for yfinance and pandas_market_calendars) + data subpackage placeholder + calendar.py (DATA-07) + test scaffolds for constituents/prices
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
+- [ ] 03-02-PLAN.md — constituents.py: Wikipedia + Slickcharts fetch, discrepancy classification, 7-day cache (DATA-01, DATA-02, DATA-05) + full unit tests
+
+**Wave 3** *(blocked on Wave 2 completion)*
+
+- [ ] 03-03-PLAN.md — prices.py: yfinance bulk + per-symbol retry, period↔hyphen normalization, 95% coverage check (DATA-03, DATA-04, DATA-08, DATA-09, DATA-10) + full unit tests; DATA-06 deferred to Phase 11
+
+**Wave 4** *(blocked on Wave 3 completion)*
+
+- [ ] 03-04-PLAN.md — data/__init__.py final public API re-exports + full-repo integration verification gate (pytest + mypy strict + ruff all green)
+
+**Cross-cutting constraints:** Ticker normalization period↔hyphen ONLY in prices.py; ^GSPC always appended to price downloads; no pytz anywhere in data/ (pmc v5 uses zoneinfo); all yfinance calls pass auto_adjust=True; data/ MUST NOT import from _app.py or commands/; DATA-06 (split detection) is OUT OF SCOPE — owned by Phase 11.
 
 ### Phase 4: Strategy Logic
 
@@ -271,7 +289,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 |-------|----------------|--------|-----------|
 | 1. Project Skeleton and Tooling | 4/4 | Complete | 2026-05-23 |
 | 2. Database and Migrations | 5/5 | Complete    | 2026-05-23 |
-| 3. Data Sources | 0/TBD | Not started | - |
+| 3. Data Sources | 0/4 | Not started | - |
 | 4. Strategy Logic | 0/TBD | Not started | - |
 | 5. UI Components | 0/TBD | Not started | - |
 | 6. First-Run Init Command | 0/TBD | Not started | - |
