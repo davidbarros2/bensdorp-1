@@ -1,27 +1,35 @@
 {
   "version": "1.0",
-  "timestamp": "2026-05-23T18:14:41.264Z",
-  "phase": "04",
-  "phase_name": "strategy-logic",
-  "phase_dir": ".planning/phases/04-strategy-logic",
-  "plan": 3,
+  "timestamp": "2026-05-24T14:30:00Z",
+  "phase": "06",
+  "phase_name": "first-run-init-command",
+  "phase_dir": ".planning/phases/06-first-run-init-command",
+  "plan": 4,
   "task": null,
   "total_tasks": null,
   "status": "paused",
   "completed_tasks": [
-    {"id": 1, "name": "04-01-PLAN: screening.py — regime_filter, liquidity_filter, momentum_filter, rank_candidates", "status": "done", "commit": "833d1eb"},
-    {"id": 2, "name": "04-02-PLAN: positions.py — stop calculations, position sizing, exit trigger", "status": "done", "commit": "270a02a"},
-    {"id": 3, "name": "04-03-PLAN: verification gate — coverage ≥95% strategy, ≥90% all, mypy strict, ruff", "status": "done", "commit": "b936fcb"}
+    {"id": 1, "name": "06-01-PLAN: init skeleton and DB-exists guard", "status": "done", "commit": "19f685a"},
+    {"id": 2, "name": "06-02-PLAN: interactive cash collection and storage", "status": "done", "commit": "e983ced"},
+    {"id": 3, "name": "06-03-PLAN: data population with Rich progress", "status": "done", "commit": "ccee887"},
+    {"id": 4, "name": "06-04-PLAN: completion summary + code review + UAT", "status": "done", "commit": "400f0b3"}
   ],
   "remaining_tasks": [],
   "blockers": [],
-  "human_actions_pending": [],
-  "decisions": [
-    {"decision": "DATA-06 split detection deferred to Phase 11", "rationale": "Documented in __init__.py docstring, prices.py docstring, plan must_haves, and threat model", "phase": "04"},
-    {"decision": "Bearish regime_filter assertion made unconditional (IN-02)", "rationale": "Fix for silent failure when regime is False — assertion was conditional before the fix", "phase": "04"},
-    {"decision": "Used math.floor not int() for position sizing", "rationale": "Matches exact strategy rule; int() truncates the same way but math.floor is explicit about intent", "phase": "04"}
+  "human_actions_pending": [
+    {
+      "action": "Run `bensdorp1 init` in a real terminal (not CliRunner) on a clean BENSDORP1_HOME path",
+      "context": "Verify TrackContext progress bar visually advances per-symbol; verify Rich rendering and live yfinance network calls work end-to-end",
+      "blocking": false
+    }
   ],
-  "uncommitted_files": [".planning/STATE.md"],
-  "next_action": "Run /gsd-discuss-phase for Phase 05: UI Components — review UI-01 through UI-10 requirements in REQUIREMENTS.md before discussing",
-  "context_notes": "Phase 4 is 100% complete. All 3 plans executed, UAT passed (10/10), code review complete with all findings resolved, security verification done, Nyquist validation complete. Ready to start Phase 5 (UI Components)."
+  "decisions": [
+    {"decision": "render_kv_block promoted to public in ui/__init__.py", "rationale": "IN-01: private symbol used across module boundary", "phase": "06"},
+    {"decision": "init absent from test_stub_exits_cleanly parametrize list", "rationale": "IN-02: init is fully implemented, not a stub — presence would be wrong", "phase": "06"},
+    {"decision": "datetime.now(UTC) captured once at _store_cash entry", "rationale": "WR-01: avoids timestamp drift between audit and insert", "phase": "06"},
+    {"decision": "confirm_prompt re-raises KeyboardInterrupt", "rationale": "CR-01: callers' interrupt handlers must fire", "phase": "06"}
+  ],
+  "uncommitted_files": [],
+  "next_action": "Run /gsd-discuss-phase for Phase 7 (scan-command). Read SC-* requirements in REQUIREMENTS.md and src/bensdorp1/strategy/screening.py first.",
+  "context_notes": "Phase 06 is 100% complete. 275 tests passing, 97% coverage. 2 human-verification items deferred (real terminal + live network) — non-blocking. Project at 43% (6/14 phases). Ready to plan Phase 7."
 }
