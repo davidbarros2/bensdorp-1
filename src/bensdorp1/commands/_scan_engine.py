@@ -706,23 +706,27 @@ def _run_screening(
     }
 
     spx_closes: pd.Series[float] = spx_df["close"].astype(float)
-    regime_active: bool = regime_filter(spx_closes)
 
-    candidates: list[Candidate] = []
+    try:
+        regime_active: bool = regime_filter(spx_closes)
 
-    if regime_active:
-        # Apply strategy filters in sequence
-        liquid_symbols: list[str] = liquidity_filter(constituent_dfs)
-        liquid_dfs: dict[str, pd.DataFrame] = {
-            sym: constituent_dfs[sym]
-            for sym in liquid_symbols
-            if sym in constituent_dfs
-        }
-        momentum_symbols: list[str] = momentum_filter(liquid_dfs)
-        momentum_dfs: dict[str, pd.DataFrame] = {
-            sym: liquid_dfs[sym] for sym in momentum_symbols if sym in liquid_dfs
-        }
-        candidates = rank_candidates(momentum_dfs, available_cash)
+        candidates: list[Candidate] = []
+
+        if regime_active:
+            # Apply strategy filters in sequence
+            liquid_symbols: list[str] = liquidity_filter(constituent_dfs)
+            liquid_dfs: dict[str, pd.DataFrame] = {
+                sym: constituent_dfs[sym]
+                for sym in liquid_symbols
+                if sym in constituent_dfs
+            }
+            momentum_symbols: list[str] = momentum_filter(liquid_dfs)
+            momentum_dfs: dict[str, pd.DataFrame] = {
+                sym: liquid_dfs[sym] for sym in momentum_symbols if sym in liquid_dfs
+            }
+            candidates = rank_candidates(momentum_dfs, available_cash)
+    except ValueError as exc:
+        raise RuntimeError(str(exc)) from exc
 
     return regime_active, spx_close, spx_sma_200, candidates
 
