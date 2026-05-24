@@ -40,7 +40,7 @@ This is a single-version project. All requirements below are v1. There is no v2 
 
 ### Commands — Daily Operation
 
-- [ ] **CMD-03**: `bensdorp1 scan [--force]` — end-of-day screening; refuses before 16:30 ET; idempotent (shows existing scan without `--force`); outputs exit triggers then buy candidates
+- [x] **CMD-03**: `bensdorp1 scan [--force]` — end-of-day screening; refuses before 16:30 ET; idempotent (shows existing scan without `--force`); outputs exit triggers then buy candidates
 - [ ] **CMD-04**: `bensdorp1 last` — shows most recent scan output; does not re-run anything
 - [ ] **CMD-05**: `bensdorp1 history [--limit N] [--since DATE]` — compact table of past scans
 
@@ -165,7 +165,7 @@ None. This is a single-version project. v1 is the only version. Post-v1 is maint
 | DATA-10 | Phase 3: Data Sources | Complete |
 | CMD-01 | Phase 6: First-Run Init Command | Pending |
 | CMD-02 | Phase 10: System Commands | Pending |
-| CMD-03 | Phase 7: Scan Command | Pending |
+| CMD-03 | Phase 7: Scan Command | Complete |
 | CMD-04 | Phase 9: Consultation Commands | Pending |
 | CMD-05 | Phase 9: Consultation Commands | Pending |
 | CMD-06 | Phase 8: Confirmation Commands | Pending |
