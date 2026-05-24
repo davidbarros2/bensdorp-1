@@ -13,7 +13,6 @@ from bensdorp1.ui.styles import (
     SUCCESS_STYLE,
     WARNING_STYLE,
     _console,
-    _render_kv_block,
     format_date,
     format_days,
     format_pct,
@@ -23,6 +22,7 @@ from bensdorp1.ui.styles import (
     format_time,
     format_timezone_pair,
     format_volume,
+    render_kv_block,
 )
 
 # ---------------------------------------------------------------------------
@@ -157,13 +157,13 @@ def test_format_relative_duration_buckets(delta_seconds: int, expected: str) -> 
 
 
 def test_render_kv_block_alignment() -> None:
-    """_render_kv_block values align at max_key_len + 1 + 2 columns."""
+    """render_kv_block values align at max_key_len + 1 + 2 columns."""
     console = Console(record=True, width=80)
     data = {
         "Database created": "/p/x.db",
         "History downloaded": "220 trading days",
     }
-    _render_kv_block(data, console)
+    render_kv_block(data, console)
     text = console.export_text()
     # longest key is "History downloaded" (18 chars); value at col 21 (18 + 1 colon + 2)
     lines = [ln for ln in text.splitlines() if ln.strip()]
@@ -177,9 +177,9 @@ def test_render_kv_block_alignment() -> None:
 
 
 def test_render_kv_block_empty() -> None:
-    """_render_kv_block({}, console) writes nothing."""
+    """render_kv_block({}, console) writes nothing."""
     console = Console(record=True, width=80)
-    _render_kv_block({}, console)
+    render_kv_block({}, console)
     text = console.export_text()
     assert text.strip() == ""
 

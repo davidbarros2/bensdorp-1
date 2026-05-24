@@ -6,7 +6,7 @@ from rich.console import Console
 from rich.text import Text
 
 from bensdorp1.ui.styles import _console as _default_console
-from bensdorp1.ui.styles import _render_kv_block
+from bensdorp1.ui.styles import render_kv_block
 
 
 class Severity(Enum):
@@ -57,17 +57,17 @@ def print_message(
     prefix_text.append(f" {title}")
     con.print(prefix_text, highlight=False)
 
-    # Optional: data kv block — _render_kv_block uses markup=False internally (T-05-04)
+    # Optional: data kv block — render_kv_block uses markup=False internally (T-05-04)
     if data:
         con.print()
-        _render_kv_block(data, con)
+        render_kv_block(data, con)
 
     # Optional: impact kv block with subsection separator
     if impact:
         con.print()
         con.print(Text("Impact"), highlight=False)
         con.print(Text("---"), highlight=False)
-        _render_kv_block(impact, con)
+        render_kv_block(impact, con)
 
     # Optional: body lines — wrapped in Text to prevent markup injection
     if body:

@@ -143,7 +143,7 @@ def format_relative_duration(
 # ---------------------------------------------------------------------------
 
 
-def _render_kv_block(
+def render_kv_block(
     data: dict[str, str],
     console: Console,
     indent: str = "",

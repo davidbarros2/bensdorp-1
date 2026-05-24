@@ -28,11 +28,8 @@ from bensdorp1.ui import (
     format_price,
     number_prompt,
     print_error,
+    render_kv_block,
 )
-
-# direct import of private helper — completion summary requires
-# column-aligned kv pairs (no public equivalent)
-from bensdorp1.ui.styles import _render_kv_block
 
 # ---------------------------------------------------------------------------
 # Module-level constants
@@ -222,7 +219,7 @@ def init() -> None:
     console.print(Text("Setup complete"))
     console.print(Text(SEPARATOR))
     console.print()
-    _render_kv_block(
+    render_kv_block(
         {
             "Database created": _tilde_path(db_path),
             "Backups location": _tilde_path(DATA_DIR / "backups") + "/",

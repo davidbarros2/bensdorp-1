@@ -43,6 +43,7 @@ from bensdorp1.ui.styles import (
     format_time,
     format_timezone_pair,
     format_volume,
+    render_kv_block,
 )
 from bensdorp1.ui.tables import render_table
 
@@ -78,6 +79,7 @@ __all__ = [
     "print_message",
     "print_success",
     "print_warning",
+    "render_kv_block",
     "render_table",
     "text_prompt",
 ]
