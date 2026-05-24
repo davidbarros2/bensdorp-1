@@ -463,16 +463,15 @@ def _get_close_for_day(
     df = price_dfs.get(symbol)
     if df is None or df.empty:
         return None
-    for _, row in df.iterrows():
-        td = row["trade_date"]
-        td_date: date
-        if hasattr(td, "date"):
-            td_date = td.date()
-        else:
-            td_date = date(td.year, td.month, td.day)
-        if td_date == target_date:
-            return float(row["close"])
-    return None
+    # Vectorized date comparison — avoids Python-level loop overhead (WR-03)
+    dates = df["trade_date"].apply(
+        lambda td: td.date() if hasattr(td, "date") else date(td.year, td.month, td.day)
+    )
+    mask = dates == target_date
+    matched = df.loc[mask, "close"]
+    if matched.empty:
+        return None
+    return float(matched.iloc[0])
 
 
 def _update_position_stops(
