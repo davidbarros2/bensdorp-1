@@ -70,6 +70,10 @@ from bensdorp1.ui import (
 
 SEPARATOR: str = "=" * 64  # matches spec §7.2 exactly — same as init.py
 PRICE_FETCH_WINDOW_DAYS: int = 10  # calendar days for narrow incremental fetch
+# 201 rows needed for momentum_filter (iloc[-201] = T-200 return) + 20 for the
+# liquidity window (20-day avg volume). One extra row is "today" excluded from
+# rolling averages, giving 221 total (IN-03).
+_PRICE_ROWS_NEEDED: int = 221
 
 
 # ---------------------------------------------------------------------------
@@ -145,7 +149,7 @@ def run_scan(
         _fetch_data(engine, con, all_symbols)
 
         # 3. Load price DataFrames from DB (after fetch so data is fresh)
-        price_dfs: dict[str, pd.DataFrame] = _load_price_dfs(engine, all_symbols)
+        price_dfs: dict[str, pd.DataFrame] = _load_price_dfs(engine, all_symbols, rows_needed=_PRICE_ROWS_NEEDED)
 
         # 4. Query open positions (closed_at IS NULL)
         open_positions = _query_open_positions(engine)
@@ -463,7 +467,7 @@ def _get_close_for_day(
     df = price_dfs.get(symbol)
     if df is None or df.empty:
         return None
-    # Vectorized date comparison � avoids Python-level loop overhead (WR-03)
+    # Vectorized date comparison — avoids Python-level loop overhead (WR-03)
     dates = df["trade_date"].apply(
         lambda td: td.date() if hasattr(td, "date") else date(td.year, td.month, td.day)
     )
