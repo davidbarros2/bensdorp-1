@@ -77,6 +77,11 @@ def scan(
     if existing is not None and not force:
         if existing.raw_output is not None:
             console.print(existing.raw_output, markup=False, highlight=False)
+        else:
+            print_info(
+                "A scan record exists for today but has no output "
+                "(the prior scan may have failed). Re-run with --force to retry."
+            )
         raise typer.Exit()
 
     # 4. ENGINE DELEGATION
