@@ -9,7 +9,7 @@ from sqlalchemy.engine import Engine
 
 
 def test_all_tables_created(db_engine: Engine) -> None:
-    """STATE-01: run_migrations() creates exactly the 7 expected tables."""
+    """STATE-01: run_migrations() creates exactly the 8 expected tables."""
     insp = inspect(db_engine)
     tables = set(insp.get_table_names())
     expected = {
@@ -18,6 +18,7 @@ def test_all_tables_created(db_engine: Engine) -> None:
         "audit_log",
         "scans",
         "scan_candidates",
+        "scan_exit_triggers",
         "constituents_cache",
         "price_daily",
     }
