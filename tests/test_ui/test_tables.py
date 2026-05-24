@@ -1,10 +1,8 @@
 """Tests for ui/tables.py — minimalist Rich Table rendering per rules 6.8/6.9/6.31."""
 
-import pytest
 from rich.console import Console
 
 from bensdorp1.ui.tables import render_table
-
 
 # Box-drawing characters that must NOT appear in minimalist table output (rule 6.8)
 _BOX_CHARS = "│┌┐└┘├┤─━"
@@ -20,7 +18,9 @@ def test_render_table_no_borders() -> None:
     )
     output = c.export_text()
     for char in _BOX_CHARS:
-        assert char not in output, f"Box-drawing char {char!r} found in output: {output!r}"
+        assert char not in output, (
+            f"Box-drawing char {char!r} found in output: {output!r}"
+        )
 
 
 def test_render_table_header_text() -> None:
@@ -72,7 +72,9 @@ def test_render_table_no_bold_headers() -> None:
         console=c,
     )
     styled = c.export_text(styles=True)
-    assert "\x1b[1m" not in styled, f"Bold ANSI escape found in styled output: {styled!r}"
+    assert "\x1b[1m" not in styled, (
+        f"Bold ANSI escape found in styled output: {styled!r}"
+    )
 
 
 def test_render_table_empty_rows() -> None:
