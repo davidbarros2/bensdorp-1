@@ -935,7 +935,7 @@ All claims in this research were verified directly from the codebase source file
 
 ---
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **`run_scan` console capture strategy**
    - What we know: Phase 5 D-06 established `console: Console | None = None` pattern; tests pass `Console(record=True)`.

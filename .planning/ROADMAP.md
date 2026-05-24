@@ -243,6 +243,8 @@ Wave 3 (blocked on Waves 1 and 2)
 
 - [ ] 07-04-PLAN.md — Full integration verification gate (pytest >= 90%, mypy strict, ruff)
 
+**Cross-cutting constraints:** Two-file split (scan.py thin + _scan_engine.py engine); triggered_position_ids: set[int] for stop-freeze; SPX index values use f"{value:,.2f}" not format_price(); create_backup requires backups_dir param; all DB writes use parameterized queries; symbol strings wrapped in Text() for Rich output
+
 ### Phase 8: Confirmation Commands
 
 **Goal**: Users can record a buy, a sell, and correct a transaction — each with a confirmation prompt, impact preview, and full audit trail
@@ -350,7 +352,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | 4. Strategy Logic | 3/3 | Complete    | 2026-05-23 |
 | 5. UI Components | 5/5 | Complete    | 2026-05-24 |
 | 6. First-Run Init Command | 2/2 | Complete   | 2026-05-24 |
-| 7. Scan Command | 0/4 | Not started | - |
+| 7. Scan Command | 0/4 | Planned | - |
 | 8. Confirmation Commands | 0/TBD | Not started | - |
 | 9. Consultation Commands | 0/TBD | Not started | - |
 | 10. System Commands | 0/TBD | Not started | - |
