@@ -40,6 +40,7 @@ def scan(
     if not is_trading_day(today):
         db_path = DATA_DIR / "data" / "bensdorp1.db"
         engine = get_engine(db_path)
+        run_migrations(engine)
         with engine.connect() as conn:
             row = conn.execute(
                 select(scans.c.scan_date, scans.c.raw_output)
