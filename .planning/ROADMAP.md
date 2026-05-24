@@ -19,7 +19,7 @@ bensdorp1 is built in fourteen horizontal layers, each completing a technical st
 - [x] **Phase 4: Strategy Logic** - All filters, ranking, stop calculations, unit and property tests (completed 2026-05-23)
 - [x] **Phase 5: UI Components** - Style guide, formatting primitives, feedback thresholds, tables (completed 2026-05-24)
 - [x] **Phase 6: First-Run Init Command** - `init` — directory tree, DB creation, history download, cash declaration (completed 2026-05-24)
-- [ ] **Phase 7: Scan Command** - `scan` — daily screening, regime/liquidity/momentum filters, exit triggers, buy candidates
+- [x] **Phase 7: Scan Command** - `scan` — daily screening, regime/liquidity/momentum filters, exit triggers, buy candidates (completed 2026-05-24)
 - [ ] **Phase 8: Confirmation Commands** - `buy`, `sell`, `fix` — transaction recording and correction
 - [ ] **Phase 9: Consultation Commands** - `portfolio`, `detail`, `last`, `history`, `cash`, `config`, `audit`
 - [ ] **Phase 10: System Commands** - `status`, `refresh`, `restore`
@@ -241,7 +241,7 @@ Wave 3 (blocked on Waves 1 and 2)
 
 **Wave 4** *(blocked on Wave 3 completion)*
 
-- [ ] 07-04-PLAN.md — Full integration verification gate (pytest >= 90%, mypy strict, ruff)
+- [x] 07-04-PLAN.md — Full integration verification gate (pytest >= 90%, mypy strict, ruff)
 
 **Cross-cutting constraints:** Two-file split (scan.py thin + _scan_engine.py engine); triggered_position_ids: set[int] for stop-freeze; SPX index values use f"{value:,.2f}" not format_price(); create_backup requires backups_dir param; all DB writes use parameterized queries; symbol strings wrapped in Text() for Rich output
 
@@ -352,7 +352,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | 4. Strategy Logic | 3/3 | Complete    | 2026-05-23 |
 | 5. UI Components | 5/5 | Complete    | 2026-05-24 |
 | 6. First-Run Init Command | 2/2 | Complete   | 2026-05-24 |
-| 7. Scan Command | 3/4 | In Progress|  |
+| 7. Scan Command | 4/4 | Complete   | 2026-05-24 |
 | 8. Confirmation Commands | 0/TBD | Not started | - |
 | 9. Consultation Commands | 0/TBD | Not started | - |
 | 10. System Commands | 0/TBD | Not started | - |
