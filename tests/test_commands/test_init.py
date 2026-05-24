@@ -72,7 +72,7 @@ def test_cash_validation_reprompts(tmp_path: Path) -> None:
         result = runner.invoke(app, ["init"], input="y\n0\n-100\n50000\ny\n")
 
     assert result.exit_code == 0, f"Unexpected exit. Output:\n{result.output}"
-    assert "Error: Cash must be greater than zero." in result.output
+    assert result.output.count("Error: Cash must be greater than zero.") == 2
 
 
 def test_ctrl_c_during_cash_entry(tmp_path: Path) -> None:
