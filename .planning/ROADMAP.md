@@ -225,7 +225,23 @@ Wave 3 (blocked on Waves 1 and 2)
   3. Running `bensdorp1 scan` a second time on the same trading day shows the existing scan output without re-running; `bensdorp1 scan --force` re-runs and overwrites
   4. A `scan_performed` audit event is written with the correct trading date, regime state, candidate count, and exit trigger count
 
-**Plans**: TBD
+**Plans**: 4 plans in 4 waves
+
+**Wave 1** — Schema + test scaffolding
+
+- [ ] 07-01-PLAN.md — scan_exit_triggers schema extension + Wave 0 test stubs
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
+- [ ] 07-02-PLAN.md — _scan_engine.py: full business logic (pre-flight, data fetch, catch-up, stop updates, screening, rendering, persistence)
+
+**Wave 3** *(blocked on Wave 2 completion)*
+
+- [ ] 07-03-PLAN.md — scan.py Typer command (time gate, idempotency, --force) + all 10 tests implemented
+
+**Wave 4** *(blocked on Wave 3 completion)*
+
+- [ ] 07-04-PLAN.md — Full integration verification gate (pytest >= 90%, mypy strict, ruff)
 
 ### Phase 8: Confirmation Commands
 
@@ -334,7 +350,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | 4. Strategy Logic | 3/3 | Complete    | 2026-05-23 |
 | 5. UI Components | 5/5 | Complete    | 2026-05-24 |
 | 6. First-Run Init Command | 2/2 | Complete   | 2026-05-24 |
-| 7. Scan Command | 0/TBD | Not started | - |
+| 7. Scan Command | 0/4 | Not started | - |
 | 8. Confirmation Commands | 0/TBD | Not started | - |
 | 9. Consultation Commands | 0/TBD | Not started | - |
 | 10. System Commands | 0/TBD | Not started | - |
