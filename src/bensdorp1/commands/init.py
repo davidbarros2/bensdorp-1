@@ -129,7 +129,13 @@ def init() -> None:
     console.print()
 
     # 4. PRE-CONFIRMATION PROMPT
-    if not confirm_prompt("Continue?", console=console):
+    try:
+        confirmed = confirm_prompt("Continue?", console=console)
+    except KeyboardInterrupt:
+        console.print()
+        console.print(Text("Operation aborted. No changes were made."))
+        raise typer.Exit() from None
+    if not confirmed:
         raise typer.Exit()
     console.print()
 

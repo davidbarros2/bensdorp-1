@@ -19,7 +19,7 @@ def confirm_prompt(message: str, *, console: Console | None = None) -> bool:
     Accepts y Y n N (case-insensitive after strip).
     Re-prompts on empty input or any other character (rule 6.15 — no default).
     On KeyboardInterrupt: prints blank line then cancellation message,
-    returns False (rule 6.18).
+    then re-raises so callers' except KeyboardInterrupt blocks fire.
 
     Args:
         message: The question to display (caller responsible for sentence case).
@@ -27,7 +27,10 @@ def confirm_prompt(message: str, *, console: Console | None = None) -> bool:
             Defaults to _default_console.
 
     Returns:
-        True for y/Y, False for n/N or KeyboardInterrupt.
+        True for y/Y, False for n/N.
+
+    Raises:
+        KeyboardInterrupt: when the user presses Ctrl+C.
     """
     con = console if console is not None else _default_console
     prompt_text = f"{message} [y/n] "
@@ -37,7 +40,7 @@ def confirm_prompt(message: str, *, console: Console | None = None) -> bool:
         except KeyboardInterrupt:
             con.print()
             con.print(Text("Operation aborted. No changes were made."))
-            return False
+            raise  # re-raise so callers' except KeyboardInterrupt blocks fire
         if raw == "y":
             return True
         if raw == "n":

@@ -51,15 +51,15 @@ def test_confirm_reprompts_on_invalid(monkeypatch: pytest.MonkeyPatch) -> None:
 
 
 def test_confirm_keyboard_interrupt(monkeypatch: pytest.MonkeyPatch) -> None:
-    """KeyboardInterrupt causes cancellation message and returns False."""
+    """KeyboardInterrupt prints cancellation message then re-raises."""
 
     def _raise_kbd(_: str) -> str:
         raise KeyboardInterrupt
 
     c = Console(record=True, width=80)
     monkeypatch.setattr("builtins.input", _raise_kbd)
-    result = confirm_prompt("Delete?", console=c)
-    assert result is False
+    with pytest.raises(KeyboardInterrupt):
+        confirm_prompt("Delete?", console=c)
     output = c.export_text()
     assert "Operation aborted. No changes were made." in output
 
