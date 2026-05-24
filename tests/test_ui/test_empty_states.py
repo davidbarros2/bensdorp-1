@@ -55,7 +55,7 @@ def test_print_empty_state_uses_info_severity() -> None:
 
 
 def test_print_empty_state_no_suggestion_no_extra_text() -> None:
-    """Without suggestion, only the 'No X found.' message appears (no trailing garbage)."""
+    """Without suggestion, only the 'No X found.' message appears (no garbage)."""
     c = Console(record=True, width=80)
     print_empty_state("history", console=c)
     text = c.export_text().strip()
