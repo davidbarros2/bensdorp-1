@@ -697,15 +697,17 @@ def _run_screening(
             "Run `bensdorp1 init` to download price history."
         )
 
-    spx_close: float = float(spx_df["close"].iloc[-1])
-    spx_sma_200: float = float(spx_df["close"].tail(200).mean())
+    # Cast to float first so spx_close, spx_sma_200, and the value passed
+    # to regime_filter all use the same typed series (WR-02: avoids rounding
+    # differences between integer-stored closes and float-casted closes).
+    spx_closes: pd.Series[float] = spx_df["close"].astype(float)
+    spx_close: float = float(spx_closes.iloc[-1])
+    spx_sma_200: float = float(spx_closes.tail(200).mean())
 
     # Constituents only (exclude ^GSPC from filter pipeline)
     constituent_dfs: dict[str, pd.DataFrame] = {
         sym: df for sym, df in price_dfs.items() if sym != "^GSPC"
     }
-
-    spx_closes: pd.Series[float] = spx_df["close"].astype(float)
 
     try:
         regime_active: bool = regime_filter(spx_closes)
