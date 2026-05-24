@@ -15,7 +15,8 @@ bensdorp1 is built in fourteen horizontal layers, each completing a technical st
 - [x] **Phase 2: Database and Migrations** - SQLite schema, backup, audit log, state tables (completed 2026-05-23)
 - [x] **Phase 3: Data Sources** - Constituents fetch, price download, NYSE calendar, rate limiting
  (completed 2026-05-23)
-- [x] **Phase 4: Strategy Logic** - All filters, ranking, stop calculations, unit and property tests (completed 2026-05-23)
+- [x] **Phase 4: Strategy Logic** - All filters, ranking, stop calculations, unit and property tests
+ (completed 2026-05-23)
 - [ ] **Phase 5: UI Components** - Style guide, formatting primitives, feedback thresholds, tables
 - [ ] **Phase 6: First-Run Init Command** - `init` — directory tree, DB creation, history download, cash declaration
 - [ ] **Phase 7: Scan Command** - `scan` — daily screening, regime/liquidity/momentum filters, exit triggers, buy candidates
