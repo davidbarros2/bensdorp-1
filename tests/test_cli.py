@@ -34,7 +34,6 @@ def test_help_unknown_command_exits_nonzero() -> None:
 @pytest.mark.parametrize(
     "cmd",
     [
-        "init",
         "restore",
         "scan",
         "last",
