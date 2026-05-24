@@ -9,7 +9,7 @@ from unittest.mock import MagicMock, patch
 
 import pandas as pd
 import pytest
-from sqlalchemy import create_engine, insert, select
+from sqlalchemy import insert, select
 from sqlalchemy.engine import Engine
 from typer.testing import CliRunner
 
@@ -499,14 +499,12 @@ def test_exit_trigger_on_missed_day(db_engine: Engine) -> None:
 
 
 def test_non_trading_day_fresh_db(tmp_path: Path) -> None:
-    """IN-02: Non-trading-day path with real SQLite (no prior migrations) should not crash.
+    """IN-02: Non-trading-day path with real SQLite should not crash.
 
     This test proves the CR-01 fix: before the fix, the non-trading-day branch called
     get_engine without run_migrations, causing OperationalError on a fresh database.
     This test exercises the real DB path rather than mocking get_engine.
     """
-    from sqlalchemy.exc import OperationalError
-
     # Create a real, empty SQLite file (no tables — no migrations run yet)
     db_path = tmp_path / "data" / "bensdorp1.db"
     db_path.parent.mkdir(parents=True, exist_ok=True)
@@ -528,4 +526,5 @@ def test_non_trading_day_fresh_db(tmp_path: Path) -> None:
         f"Expected exit code 0 but got {result.exit_code}. "
         "This may indicate the non-trading-day branch is missing run_migrations."
     )
-    assert "not a trading day" in result.output.lower() or "no scans recorded" in result.output.lower()
+    output = result.output.lower()
+    assert "not a trading day" in output or "no scans recorded" in output

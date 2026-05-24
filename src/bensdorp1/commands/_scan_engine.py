@@ -149,7 +149,9 @@ def run_scan(
         _fetch_data(engine, con, all_symbols)
 
         # 3. Load price DataFrames from DB (after fetch so data is fresh)
-        price_dfs: dict[str, pd.DataFrame] = _load_price_dfs(engine, all_symbols, rows_needed=_PRICE_ROWS_NEEDED)
+        price_dfs: dict[str, pd.DataFrame] = _load_price_dfs(
+            engine, all_symbols, rows_needed=_PRICE_ROWS_NEEDED
+        )
 
         # 4. Query open positions (closed_at IS NULL)
         open_positions = _query_open_positions(engine)
@@ -729,7 +731,8 @@ def _run_screening(
             liquid_dfs: dict[str, pd.DataFrame] = {
                 sym: constituent_dfs_liquid[sym]
                 for sym in liquid_symbols
-                if sym in constituent_dfs_liquid and len(constituent_dfs_liquid[sym]) >= 201
+                if sym in constituent_dfs_liquid
+                and len(constituent_dfs_liquid[sym]) >= 201
             }
             momentum_symbols: list[str] = momentum_filter(liquid_dfs)
             momentum_dfs: dict[str, pd.DataFrame] = {

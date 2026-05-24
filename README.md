@@ -8,6 +8,27 @@ A single-user command-line tool for screening and monitoring stock positions bas
 
 Every trading day it shows exactly which open positions triggered a stop and which stocks are the top buy candidates — so decision time is under 5 minutes. **It does not execute trades.** All orders are placed manually via your broker; the CLI records confirmations and maintains state.
 
+## Status
+
+| Phase | Scope | Status |
+|-------|-------|--------|
+| 1 | Project skeleton, tooling, CI | Complete |
+| 2 | Database schema and migrations | Complete |
+| 3 | Data sources (constituents, price history, calendar) | Complete |
+| 4 | Strategy logic (filters, ranking, stop calculations) | Complete |
+| 5 | UI components and formatting | Complete |
+| 6 | `init` command | Complete |
+| 7 | `scan` command | Complete |
+| 8 | `buy`, `sell`, `fix` commands | Planned |
+| 9 | `portfolio`, `detail`, `last`, `history`, `cash`, `config`, `audit` | Planned |
+| 10 | `status`, `refresh`, `restore` | Planned |
+| 11 | Catch-up logic (absences, splits, delistings) | Planned |
+| 12 | `validate` command | Planned |
+| 13 | Edge cases and hardening | Planned |
+| 14 | Documentation and finalization | Planned |
+
+Commands in Phases 8–14 are registered (they appear in `--help`) but print "Not yet implemented." until their phase ships.
+
 ## Requirements
 
 - Python 3.11+
