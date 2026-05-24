@@ -31,6 +31,7 @@ def test_help_unknown_command_exits_nonzero() -> None:
     assert result.exit_code != 0
 
 
+# init is intentionally absent — it is a full implementation, not a stub
 @pytest.mark.parametrize(
     "cmd",
     [
