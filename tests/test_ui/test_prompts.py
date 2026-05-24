@@ -5,7 +5,6 @@ from rich.console import Console
 
 from bensdorp1.ui.prompts import confirm_prompt, number_prompt, text_prompt
 
-
 # ---------------------------------------------------------------------------
 # confirm_prompt tests
 # ---------------------------------------------------------------------------
@@ -36,7 +35,7 @@ def test_confirm_N_uppercase(monkeypatch: pytest.MonkeyPatch) -> None:
 
 
 def test_confirm_reprompts_on_invalid(monkeypatch: pytest.MonkeyPatch) -> None:
-    """Empty or non-y/n input causes re-prompt; result is True after 'y' on third try."""
+    """Empty or non-y/n input causes re-prompt; True after 'y' on third try."""
     call_count = 0
     inputs = iter(["", "maybe", "y"])
 
