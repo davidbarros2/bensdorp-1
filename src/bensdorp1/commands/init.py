@@ -194,10 +194,12 @@ def init() -> None:
         # Step [3/3] — Downloading price history
         symbols = list(constituents.keys())
         with ms.step("Downloading price history", total=len(symbols)) as _track:
-            track: TrackContext = _track  # type: ignore[assignment]
+            assert isinstance(_track, TrackContext), (
+                f"Expected TrackContext from ms.step(total=...), got {type(_track)!r}"
+            )
             for symbol in symbols:
                 update_price_data(engine, [symbol])
-                track.advance(symbol)
+                _track.advance(symbol)
 
     elapsed = time.monotonic() - start_time
 
