@@ -9,7 +9,7 @@ from unittest.mock import MagicMock, patch
 
 import pandas as pd
 import pytest
-from sqlalchemy import insert, select
+from sqlalchemy import create_engine, insert, select
 from sqlalchemy.engine import Engine
 from typer.testing import CliRunner
 
@@ -496,3 +496,36 @@ def test_exit_trigger_on_missed_day(db_engine: Engine) -> None:
     assert rows[0].position_id == int(pos_id)
     # triggered_date is stored as midnight UTC of the actual trigger day (D-09)
     assert rows[0].triggered_date.date() == missed_day
+
+
+def test_non_trading_day_fresh_db(tmp_path: Path) -> None:
+    """IN-02: Non-trading-day path with real SQLite (no prior migrations) should not crash.
+
+    This test proves the CR-01 fix: before the fix, the non-trading-day branch called
+    get_engine without run_migrations, causing OperationalError on a fresh database.
+    This test exercises the real DB path rather than mocking get_engine.
+    """
+    from sqlalchemy.exc import OperationalError
+
+    # Create a real, empty SQLite file (no tables — no migrations run yet)
+    db_path = tmp_path / "data" / "bensdorp1.db"
+    db_path.parent.mkdir(parents=True, exist_ok=True)
+
+    with (
+        patch("bensdorp1.commands.scan.DATA_DIR", tmp_path),
+        patch("bensdorp1.commands.scan.datetime") as mock_dt,
+        patch("bensdorp1.commands.scan.is_trading_day", return_value=False),
+        # Do NOT mock get_engine — let the real DB path run
+    ):
+        # Saturday at 17:00 ET — after 16:30 so time gate passes, but weekend
+        mock_dt.now.return_value = datetime(2026, 5, 23, 17, 0, tzinfo=MARKET_TZ)
+        # Before CR-01 fix: this would raise OperationalError (no such table: scans)
+        # After CR-01 fix: migrations run, tables exist, query returns None → no crash
+        result = runner.invoke(app, ["scan"])
+
+    # The command should exit cleanly (exit code 0) and not crash with OperationalError
+    assert result.exit_code == 0, (
+        f"Expected exit code 0 but got {result.exit_code}. "
+        "This may indicate the non-trading-day branch is missing run_migrations."
+    )
+    assert "not a trading day" in result.output.lower() or "no scans recorded" in result.output.lower()
