@@ -177,9 +177,7 @@ class TrackContext:
 
         pct_int = int(pct * 100)
         lines: list[Text] = [
-            Text(
-                f"Progress:   {bar}  {self._completed}/{self._total}  ({pct_int}%)"
-            ),
+            Text(f"Progress:   {bar}  {self._completed}/{self._total}  ({pct_int}%)"),
             Text(f"Current:    {self._current_label}"),
             Text(f"Elapsed:    {self._format_duration(elapsed)}"),
         ]
@@ -285,9 +283,7 @@ class MultiStepContext:
             SpinnerContext (total is None) or TrackContext (total provided).
         """
         self._current += 1
-        self._console.print(
-            Text(f"[{self._current}/{self._total}] {description}")
-        )
+        self._console.print(Text(f"[{self._current}/{self._total}] {description}"))
 
         inner: SpinnerContext | TrackContext
         if total is None:

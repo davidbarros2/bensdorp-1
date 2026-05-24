@@ -119,21 +119,15 @@ def test_no_disallowed_imports_in_ui() -> None:
         for node in ast.walk(tree):
             if isinstance(node, ast.ImportFrom) and node.module is not None:
                 for prefix in _DISALLOWED_PREFIXES:
-                    if node.module == prefix or node.module.startswith(
-                        prefix + "."
-                    ):
-                        rel = py_file.relative_to(
-                            _UI_DIR.parent.parent.parent
-                        )
+                    if node.module == prefix or node.module.startswith(prefix + "."):
+                        rel = py_file.relative_to(_UI_DIR.parent.parent.parent)
                         violations.append(
-                            f"{rel} line {node.lineno}: "
-                            f"from {node.module} import ..."
+                            f"{rel} line {node.lineno}: from {node.module} import ..."
                         )
 
     assert not violations, (
         "D-08 violation — ui/*.py must not import from "
-        "db/data/strategy/commands:\n"
-        + "\n".join(f"  {v}" for v in violations)
+        "db/data/strategy/commands:\n" + "\n".join(f"  {v}" for v in violations)
     )
 
 

@@ -60,9 +60,7 @@ def test_data_dir_default() -> None:
     assert config_module.DATA_DIR == Path.home() / "bensdorp1"
 
 
-def test_data_dir_env_override(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
+def test_data_dir_env_override(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     """When BENSDORP1_HOME=<tmp_path>, DATA_DIR == Path(tmp_path) after reload."""
     monkeypatch.setenv("BENSDORP1_HOME", str(tmp_path))
     importlib.reload(config_module)

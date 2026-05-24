@@ -144,9 +144,7 @@ _FIXED_NOW = datetime(2026, 5, 24, 12, 0, 0, tzinfo=UTC)
         (86400 * 400, "1 years ago"),
     ],
 )
-def test_format_relative_duration_buckets(
-    delta_seconds: int, expected: str
-) -> None:
+def test_format_relative_duration_buckets(delta_seconds: int, expected: str) -> None:
     """Relative duration buckets match spec rule 6.27."""
     dt = _FIXED_NOW - timedelta(seconds=delta_seconds)
     result = format_relative_duration(dt, _now=_FIXED_NOW)
