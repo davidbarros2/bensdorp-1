@@ -801,7 +801,7 @@ strict type checking. No assumed claims.
 
 ---
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **Spinner in `spinner()` context manager vs. `SpinnerColumn`**
    - What we know: `Spinner("dots")` renders frames correctly. `SpinnerColumn` is a Progress column.
