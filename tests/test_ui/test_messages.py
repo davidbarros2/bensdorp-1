@@ -15,7 +15,6 @@ from bensdorp1.ui.messages import (
     print_warning,
 )
 
-
 # ---------------------------------------------------------------------------
 # Parametrized severity prefix tests
 # ---------------------------------------------------------------------------
@@ -35,7 +34,9 @@ def test_severity_prefix_in_output(severity: Severity) -> None:
     print_message(severity, "Test message", console=c)
     text = c.export_text()
     expected_prefix = SEVERITY_PREFIXES[severity]
-    assert expected_prefix in text, f"Expected '{expected_prefix}' in output, got: {text!r}"
+    assert expected_prefix in text, (
+        f"Expected '{expected_prefix}' in output, got: {text!r}"
+    )
 
 
 def test_severity_enum_values() -> None:
@@ -126,14 +127,14 @@ def test_print_success_ansi_color() -> None:
 
 
 def test_print_info_no_color() -> None:
-    """With no_color=True: text prefix present; second export_text() returns '' (buffer cleared)."""
+    """NO_COLOR: prefix present; second export_text() returns '' (buffer cleared)."""
     c = Console(record=True, no_color=True, force_terminal=True, width=80)
     print_info("Test", console=c)
     text = c.export_text()
     assert "Info: Test" in text
     # Buffer cleared on first export_text() call — second call returns empty string
     styled = c.export_text(styles=True)
-    assert styled == "", f"Expected empty string after buffer cleared, got: {styled!r}"
+    assert styled == "", f"Expected empty after buffer cleared, got: {styled!r}"
 
 
 # ---------------------------------------------------------------------------
@@ -159,7 +160,9 @@ def test_print_message_kv_alignment() -> None:
     assert "220 trading days" in text
     # Find column positions of values to verify alignment
     lines = text.splitlines()
-    kv_lines = [line for line in lines if "/p/x.db" in line or "220 trading days" in line]
+    kv_lines = [
+        line for line in lines if "/p/x.db" in line or "220 trading days" in line
+    ]
     assert len(kv_lines) == 2, f"Expected 2 kv lines, got: {kv_lines}"
     # The values must start at the same column position (aligned)
     col_db = kv_lines[0].index("/p/x.db")
@@ -214,7 +217,7 @@ def test_print_message_with_impact_and_body() -> None:
 
 
 def test_print_message_no_data_no_actions() -> None:
-    """print_message with only severity+title produces exactly one meaningful output line."""
+    """print_message with only severity+title produces exactly one meaningful line."""
     c = Console(record=True, width=80)
     print_message(Severity.INFO, "System ready", console=c)
     text = c.export_text()
@@ -259,10 +262,9 @@ def test_print_message_title_markup_injection() -> None:
         "[bold]injected[/bold]",
         console=c,
     )
+    # No bold ANSI from title: bold markup in title must not be interpreted
     styled = c.export_text(styles=True)
-    # Must NOT contain bold ANSI sequence from the title
-    # The [bold] from title should not be rendered (only prefix color is styled)
-    assert "[bold]injected[/bold]" in c.export_text() or True  # title rendered literally
+    assert "\x1b[1m" not in styled, "Bold ANSI from title markup injection found"
 
 
 # ---------------------------------------------------------------------------
