@@ -1,10 +1,10 @@
 """Tests for bensdorp1.ui.styles formatters, Style constants, and _console singleton."""
 
-from datetime import date, datetime, timezone, timedelta
+from datetime import UTC, date, datetime, timedelta
 
 import pytest
 from rich.console import Console
-from rich.spinner import SPINNERS
+from rich.style import Style
 
 from bensdorp1.ui.styles import (
     ERROR_STYLE,
@@ -24,7 +24,6 @@ from bensdorp1.ui.styles import (
     format_timezone_pair,
     format_volume,
 )
-
 
 # ---------------------------------------------------------------------------
 # Numerical formatters (rule 6.10)
@@ -103,7 +102,7 @@ def test_format_date_iso8601() -> None:
 
 def test_format_time_hhmm() -> None:
     """format_time returns HH:MM for the datetime supplied."""
-    dt = datetime(2026, 5, 14, 9, 35, 0, tzinfo=timezone.utc)
+    dt = datetime(2026, 5, 14, 9, 35, 0, tzinfo=UTC)
     assert format_time(dt) == "09:35"
 
 
@@ -114,14 +113,14 @@ def test_format_time_hhmm() -> None:
 
 def test_format_timezone_pair_contains_et() -> None:
     """format_timezone_pair output contains 'ET (' for market side."""
-    dt = datetime(2026, 1, 15, 0, 0, 0, tzinfo=timezone.utc)
+    dt = datetime(2026, 1, 15, 0, 0, 0, tzinfo=UTC)
     result = format_timezone_pair(dt)
     assert "ET (" in result
 
 
 def test_format_timezone_pair_contains_lisbon() -> None:
     """format_timezone_pair output ends with 'Lisbon)' for default user TZ."""
-    dt = datetime(2026, 1, 15, 0, 0, 0, tzinfo=timezone.utc)
+    dt = datetime(2026, 1, 15, 0, 0, 0, tzinfo=UTC)
     result = format_timezone_pair(dt)
     assert result.endswith("Lisbon)")
 
@@ -130,11 +129,11 @@ def test_format_timezone_pair_contains_lisbon() -> None:
 # Relative duration (rule 6.27)
 # ---------------------------------------------------------------------------
 
-_FIXED_NOW = datetime(2026, 5, 24, 12, 0, 0, tzinfo=timezone.utc)
+_FIXED_NOW = datetime(2026, 5, 24, 12, 0, 0, tzinfo=UTC)
 
 
 @pytest.mark.parametrize(
-    "delta_seconds,expected",
+    ("delta_seconds", "expected"),
     [
         (30, "just now"),
         (90, "1 minutes ago"),
@@ -171,7 +170,6 @@ def test_render_kv_block_alignment() -> None:
     # longest key is "History downloaded" (18 chars); value at col 21 (18 + 1 colon + 2)
     lines = [ln for ln in text.splitlines() if ln.strip()]
     assert len(lines) == 2
-    # both lines must have the colon followed by spaces then value
     assert "Database created:" in lines[0]
     assert "History downloaded:" in lines[1]
     # values start at the same column
@@ -211,11 +209,8 @@ def test_style_constants_colors() -> None:
     "style",
     [ERROR_STYLE, WARNING_STYLE, INFO_STYLE, SUCCESS_STYLE, MUTED_STYLE],
 )
-def test_no_bold_in_styles(style: object) -> None:
+def test_no_bold_in_styles(style: Style) -> None:
     """No style has bold=True (rule 6.31)."""
-    from rich.style import Style
-
-    assert isinstance(style, Style)
     assert style.bold is None or style.bold is False
 
 
@@ -225,9 +220,21 @@ def test_no_bold_in_styles(style: object) -> None:
 
 
 def test_dots_spinner_frames_match_spec() -> None:
-    """Rich 'dots' spinner frames exactly match spec braille sequence."""
+    """Rich 'dots' spinner frames exactly match spec braille sequence (rule 6.22)."""
+    from typing import Any, cast  # noqa: PLC0415
+
+    import rich.spinner as _rs  # noqa: PLC0415
+
+    # SPINNERS is not in rich.spinner's __all__; access via type: ignore
+    spinners: dict[str, Any] = cast(
+        "dict[str, Any]",
+        _rs.SPINNERS,  # type: ignore[attr-defined]
+    )
+    # frames may be a str (joined) or list[str] — normalise to list[str]
+    raw_frames: Any = spinners["dots"]["frames"]
+    frames: list[str] = list(raw_frames)
     expected = list("⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏")
-    assert list(SPINNERS["dots"]["frames"]) == expected
+    assert frames == expected
 
 
 # ---------------------------------------------------------------------------
