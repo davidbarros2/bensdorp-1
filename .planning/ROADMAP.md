@@ -15,8 +15,9 @@ bensdorp1 is built in fourteen horizontal layers, each completing a technical st
 - [x] **Phase 2: Database and Migrations** - SQLite schema, backup, audit log, state tables (completed 2026-05-23)
 - [x] **Phase 3: Data Sources** - Constituents fetch, price download, NYSE calendar, rate limiting
  (completed 2026-05-23)
+
 - [x] **Phase 4: Strategy Logic** - All filters, ranking, stop calculations, unit and property tests (completed 2026-05-23)
-- [ ] **Phase 5: UI Components** - Style guide, formatting primitives, feedback thresholds, tables
+- [x] **Phase 5: UI Components** - Style guide, formatting primitives, feedback thresholds, tables (completed 2026-05-24)
 - [ ] **Phase 6: First-Run Init Command** - `init` — directory tree, DB creation, history download, cash declaration
 - [ ] **Phase 7: Scan Command** - `scan` — daily screening, regime/liquidity/momentum filters, exit triggers, buy candidates
 - [ ] **Phase 8: Confirmation Commands** - `buy`, `sell`, `fix` — transaction recording and correction
@@ -175,17 +176,17 @@ bensdorp1 is built in fourteen horizontal layers, each completing a technical st
 
 Wave 1 — Foundation
 
-- [ ] 05-01-PLAN.md — config.py + ui/styles.py (formatters, Style palette, _console singleton, kv-align helper) + tests/test_ui/ scaffold
+- [x] 05-01-PLAN.md — config.py + ui/styles.py (formatters, Style palette, _console singleton, kv-align helper) + tests/test_ui/ scaffold
 
 Wave 2 (blocked on Wave 1; three parallel plans)
 
-- [ ] 05-02-PLAN.md — ui/messages.py (Severity enum, print_message, 4 shortcut aliases) + ui/empty_states.py + tests
-- [ ] 05-03-PLAN.md — ui/tables.py (minimalist render_table) + ui/prompts.py (confirm_prompt, text_prompt, number_prompt) + tests
-- [ ] 05-04-PLAN.md — ui/progress.py (thresholds, BlockBarColumn, SpinnerContext, TrackContext, MultiStepContext, feedback namespace) + tests
+- [x] 05-02-PLAN.md — ui/messages.py (Severity enum, print_message, 4 shortcut aliases) + ui/empty_states.py + tests
+- [x] 05-03-PLAN.md — ui/tables.py (minimalist render_table) + ui/prompts.py (confirm_prompt, text_prompt, number_prompt) + tests
+- [x] 05-04-PLAN.md — ui/progress.py (thresholds, BlockBarColumn, SpinnerContext, TrackContext, MultiStepContext, feedback namespace) + tests
 
 Wave 3 (blocked on Waves 1 and 2)
 
-- [ ] 05-05-PLAN.md — ui/__init__.py re-exports + conftest record_console fixture + public API smoke + coverage gate + full repo verification
+- [x] 05-05-PLAN.md — ui/__init__.py re-exports + conftest record_console fixture + public API smoke + coverage gate + full repo verification
 
 **UI hint**: yes
 
@@ -321,7 +322,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | 2. Database and Migrations | 5/5 | Complete    | 2026-05-23 |
 | 3. Data Sources | 4/4 | Complete    | 2026-05-23 |
 | 4. Strategy Logic | 3/3 | Complete    | 2026-05-23 |
-| 5. UI Components | 0/5 | Not started | - |
+| 5. UI Components | 5/5 | Complete    | 2026-05-24 |
 | 6. First-Run Init Command | 0/TBD | Not started | - |
 | 7. Scan Command | 0/TBD | Not started | - |
 | 8. Confirmation Commands | 0/TBD | Not started | - |

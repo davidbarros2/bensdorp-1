@@ -83,16 +83,16 @@ This is a single-version project. All requirements below are v1. There is no v2 
 
 ### UI and Output
 
-- [ ] **UI-01**: All 31 style guide rules from spec section 6 implemented without exception
-- [ ] **UI-02**: Severity prefixes with ANSI color: Error (red), Warning (yellow), Info (cyan), Success (green); text fallback in non-color terminals
-- [ ] **UI-03**: Tables: minimalist (no borders, 2-space column separation), left-align text, right-align numbers, header alignment matches column
-- [ ] **UI-04**: Feedback thresholds: silent <1s; spinner (braille: ⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏) 1-6s; progress bar 6-30s; progress bar + ETA >30s
-- [ ] **UI-05**: Dual timezone on every timestamp: ET and user's local (default Lisbon; overridable via BENSDORP1_USER_TZ)
-- [ ] **UI-06**: No decorative unicode icons (no ✓ ✗ ⚠ ℹ); no bold/italic/underline; sentence case throughout; plain text + color only
-- [ ] **UI-07**: Confirmation prompts for all destructive/state-changing actions (buy, sell, fix, cash update, restore): show summary of impact before [y/n]
-- [ ] **UI-08**: Empty states always explicit — never blank output; "No open positions." etc.
-- [ ] **UI-09**: Critical message structure: Severity prefix + title, optional data block, optional impact section, optional recommended actions (numbered)
-- [ ] **UI-10**: Numerical formatting: prices $X,XXX.XX; percentages ±X.X% (sign always); volumes X,XXX,XXX; P&L ±$X,XXX.XX (sign always); days "N days" / "1 day"
+- [x] **UI-01**: All 31 style guide rules from spec section 6 implemented without exception
+- [x] **UI-02**: Severity prefixes with ANSI color: Error (red), Warning (yellow), Info (cyan), Success (green); text fallback in non-color terminals
+- [x] **UI-03**: Tables: minimalist (no borders, 2-space column separation), left-align text, right-align numbers, header alignment matches column
+- [x] **UI-04**: Feedback thresholds: silent <1s; spinner (braille: ⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏) 1-6s; progress bar 6-30s; progress bar + ETA >30s
+- [x] **UI-05**: Dual timezone on every timestamp: ET and user's local (default Lisbon; overridable via BENSDORP1_USER_TZ)
+- [x] **UI-06**: No decorative unicode icons (no ✓ ✗ ⚠ ℹ); no bold/italic/underline; sentence case throughout; plain text + color only
+- [x] **UI-07**: Confirmation prompts for all destructive/state-changing actions (buy, sell, fix, cash update, restore): show summary of impact before [y/n]
+- [x] **UI-08**: Empty states always explicit — never blank output; "No open positions." etc.
+- [x] **UI-09**: Critical message structure: Severity prefix + title, optional data block, optional impact section, optional recommended actions (numbered)
+- [x] **UI-10**: Numerical formatting: prices $X,XXX.XX; percentages ±X.X% (sign always); volumes X,XXX,XXX; P&L ±$X,XXX.XX (sign always); days "N days" / "1 day"
 
 ### Testing and CI
 
@@ -187,16 +187,16 @@ None. This is a single-version project. v1 is the only version. Post-v1 is maint
 | STATE-05 | Phase 11: Catch-Up Logic | Pending |
 | STATE-06 | Phase 2: Database and Migrations | Complete |
 | STATE-07 | Phase 11: Catch-Up Logic | Pending |
-| UI-01 | Phase 5: UI Components | Pending |
-| UI-02 | Phase 5: UI Components | Pending |
-| UI-03 | Phase 5: UI Components | Pending |
-| UI-04 | Phase 5: UI Components | Pending |
-| UI-05 | Phase 5: UI Components | Pending |
-| UI-06 | Phase 5: UI Components | Pending |
-| UI-07 | Phase 5: UI Components | Pending |
-| UI-08 | Phase 5: UI Components | Pending |
-| UI-09 | Phase 5: UI Components | Pending |
-| UI-10 | Phase 5: UI Components | Pending |
+| UI-01 | Phase 5: UI Components | Complete |
+| UI-02 | Phase 5: UI Components | Complete |
+| UI-03 | Phase 5: UI Components | Complete |
+| UI-04 | Phase 5: UI Components | Complete |
+| UI-05 | Phase 5: UI Components | Complete |
+| UI-06 | Phase 5: UI Components | Complete |
+| UI-07 | Phase 5: UI Components | Complete |
+| UI-08 | Phase 5: UI Components | Complete |
+| UI-09 | Phase 5: UI Components | Complete |
+| UI-10 | Phase 5: UI Components | Complete |
 | TEST-01 | Phase 4: Strategy Logic | Complete |
 | TEST-02 | Phase 4: Strategy Logic | Complete |
 | TEST-03 | Phase 4: Strategy Logic | Complete |
