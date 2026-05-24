@@ -546,10 +546,15 @@ def _detect_exit_triggers(
 
     Returns list of _TriggerRow for today's newly detected triggers.
     """
-    # Check which positions already have a scan_exit_triggers row
+    # Check which positions already have a scan_exit_triggers row from a
+    # *different* scan. Excluding the current scan_id means that a --force
+    # re-run (which calls _persist_scan to delete prior trigger rows for
+    # this scan_id before re-inserting) will not suppress re-triggers.
     with engine.connect() as conn:
         existing_rows = conn.execute(
-            select(scan_exit_triggers.c.position_id)
+            select(scan_exit_triggers.c.position_id).where(
+                scan_exit_triggers.c.scan_id != scan_id
+            )
         ).fetchall()
     existing_position_ids: set[int] = {row.position_id for row in existing_rows}
 
@@ -1070,6 +1075,18 @@ def _persist_scan(
     with engine.connect() as conn:
         conn.execute(stmt)
         conn.commit()
+
+    # Delete existing scan_exit_triggers for this scan_id when force=True,
+    # so _detect_exit_triggers can re-trigger positions that fired in a prior
+    # run of the same scan_id (CR-03: prevents silent suppression on --force).
+    if force:
+        with engine.connect() as conn:
+            conn.execute(
+                delete(scan_exit_triggers).where(
+                    scan_exit_triggers.c.scan_id == scan_id
+                )
+            )
+            conn.commit()
 
     # Delete existing scan_candidates for this scan_id (idempotent on --force)
     with engine.connect() as conn:
