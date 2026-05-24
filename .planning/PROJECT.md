@@ -19,6 +19,9 @@ Every trading day, show the user exactly which positions triggered a stop and wh
 - [x] Structured audit log with 17 event types — `AuditEventType` StrEnum + `log_event()` (Validated in Phase 2)
 - [x] Maximum 10 open positions at any time — enforced by partial unique index `ix_positions_open_symbol` (Validated in Phase 2)
 
+**First-run setup (Phase 6 — First-Run Init Command)**
+- [x] `init` — DB creation, constituents fetch, 220-day price history download, cash declaration, `system_initialized` audit event (Validated in Phase 6)
+
 ### Active
 
 **Strategy logic**
@@ -40,7 +43,7 @@ Every trading day, show the user exactly which positions triggered a stop and wh
 - [ ] Automatic stock split detection and adjustment for held positions
 
 **Commands (17 total)**
-- [ ] `init` — first-run setup: DB creation, constituents fetch, 220-day price history download, cash declaration
+- [x] `init` — first-run setup (Validated in Phase 6)
 - [ ] `scan [--force]` — daily end-of-day screening; exit triggers + buy candidates
 - [ ] `last` — show most recent scan output
 - [ ] `history [--limit N] [--since D]` — compact table of past scans
@@ -138,6 +141,8 @@ Every trading day, show the user exactly which positions triggered a stop and wh
 | Wikipedia as primary constituents source | More stable, parseable table; Slickcharts as cross-check only | — Pending |
 | Adjusted close for all prices | Splits and dividends handled automatically by yfinance | — Pending |
 | 14-phase development decomposition | Matches natural dependency boundaries (skeleton → data → strategy → UI → commands) | — Pending |
+| `confirm_prompt` re-raises `KeyboardInterrupt` (Phase 6) | Callers' `except KeyboardInterrupt` blocks must fire; swallowing breaks Ctrl+C UX at nested prompts | Adopted — all prompt callers now rely on re-raise |
+| `render_kv_block` promoted to public `bensdorp1.ui` surface (Phase 6) | Private `_render_kv_block` was deep-imported by `init.py`; promoting removes coupling to internal implementation detail | Adopted — exported via `ui/__init__.py` |
 
 ## Evolution
 
@@ -157,4 +162,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-05-23 — Phase 4 complete (Strategy Logic — screening + positions pure functions, 100%/96% coverage, mypy strict clean)*
+*Last updated: 2026-05-24 — Phase 6 complete (First-Run Init Command — full interactive `bensdorp1 init` flow, 276 tests, 97% coverage, mypy strict clean)*
