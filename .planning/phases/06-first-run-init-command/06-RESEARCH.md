@@ -457,7 +457,7 @@ Note: `_render_kv_block` from `ui/styles.py` is a private helper, not exported v
 
 ---
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **Step 2 progress bar vs. SpinnerContext**
    - What we know: `update_price_data()` does bulk download without per-symbol callback. CONTEXT.md says "call `.advance(symbol)` per symbol". Spec shows a progress bar for step 3.

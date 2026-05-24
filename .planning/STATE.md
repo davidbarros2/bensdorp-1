@@ -8,7 +8,7 @@ last_activity: 2026-05-24
 progress:
   total_phases: 14
   completed_phases: 5
-  total_plans: 21
+  total_plans: 23
   completed_plans: 21
   percent: 36
 ---
@@ -20,13 +20,13 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-23)
 
 **Core value:** Every trading day, show the user exactly which positions triggered a stop and which stocks are top buy candidates, so they need less than 5 minutes of decision time.
-**Current focus:** Phase 5 — UI Components (5 plans ready to execute)
+**Current focus:** Phase 6 — First-Run Init Command (2 plans ready to execute)
 
 ## Current Position
 
 Phase: 6
 Plan: Not started
-Status: Ready to execute
+Status: Planned — ready to execute
 Last activity: 2026-05-24
 
 Progress: [██████████] 100%
