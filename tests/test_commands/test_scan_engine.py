@@ -868,11 +868,30 @@ def test_detect_exit_triggers_already_existing(db_engine: Engine) -> None:
 
     triggered_utc = datetime(today.year, today.month, today.day, tzinfo=UTC)
 
-    # Pre-insert existing trigger row
+    # Pre-insert existing trigger row with a DIFFERENT (prior) scan_id so the
+    # current scan's duplicate check (which excludes rows for current scan_id)
+    # correctly sees it as an already-triggered position (CR-03).
+    prior_scan_date = datetime(2026, 5, 21, tzinfo=UTC)
+    with db_engine.connect() as conn:
+        prior_scan_result = conn.execute(
+            insert(scans).values(
+                scan_date=prior_scan_date,
+                regime_active=True,
+                candidate_count=0,
+                exit_trigger_count=0,
+                raw_output=None,
+                created_at=datetime.now(UTC),
+            )
+        )
+        conn.commit()
+        prior_scan_pk = prior_scan_result.inserted_primary_key
+        assert prior_scan_pk is not None
+        prior_scan_id: int = int(prior_scan_pk[0])
+
     with db_engine.connect() as conn:
         conn.execute(
             insert(scan_exit_triggers).values(
-                scan_id=scan_id,
+                scan_id=prior_scan_id,  # prior scan, not the current one
                 position_id=pos_id,
                 reason="Initial stop",
                 effective_stop=100.0,
@@ -890,14 +909,14 @@ def test_detect_exit_triggers_already_existing(db_engine: Engine) -> None:
         trailing_stop=100.0,
     )
 
-    # Call with pos_id in triggered_ids
+    # Call with pos_id in triggered_ids (dict type after CR-02/WR-04)
     result = _detect_exit_triggers(
         db_engine,
         [pos],
-        {pos_id},
+        {pos_id: (today, 90.0, 100.0)},
         scan_id,
         today,
-        {},  # no price data needed — close_at_trigger defaults to 0.0
+        {},  # no price data needed
     )
 
     # Position already has a trigger row → should NOT be in new_triggers

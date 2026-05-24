@@ -266,7 +266,7 @@ def test_catchup_stop_updates(db_engine: Engine) -> None:
         trailing_stop=75.0,
     )
     open_positions = [pos]
-    triggered_ids: set[int] = set()
+    triggered_ids: dict[int, tuple[date, float, float]] = {}
 
     # missed_days = first two days; today = last day
     _update_position_stops(
@@ -351,8 +351,11 @@ def test_stop_freeze_after_trigger(db_engine: Engine) -> None:
     )
     open_positions = [pos]
 
-    # Pre-mark as triggered — position should be frozen (no DB update)
-    triggered_ids: set[int] = {int(pos_id)}
+    # Pre-mark as triggered — position should be frozen (no DB update).
+    # Use a sentinel tuple value since the function only checks membership.
+    triggered_ids: dict[int, tuple[date, float, float]] = {
+        int(pos_id): (today, 90.0, 100.0)
+    }
 
     _update_position_stops(
         db_engine,
@@ -451,7 +454,7 @@ def test_exit_trigger_on_missed_day(db_engine: Engine) -> None:
         trailing_stop=100.0,
     )
     open_positions = [pos]
-    triggered_ids: set[int] = set()
+    triggered_ids: dict[int, tuple[date, float, float]] = {}
 
     # Call _update_position_stops with the missed day — adds pos.id to triggered_ids
     _update_position_stops(
@@ -479,8 +482,8 @@ def test_exit_trigger_on_missed_day(db_engine: Engine) -> None:
     # There must be exactly one new trigger
     assert len(new_triggers) == 1
 
-    # Verify row in DB: triggered_date should be TODAY's midnight UTC
-    # (current engine uses today for triggered_date per D-09)
+    # Verify row in DB: triggered_date should be the MISSED DAY's midnight UTC
+    # (CR-02: triggered_date now stores the actual day the stop was hit, per D-09).
     with db_engine.connect() as conn:
         rows = conn.execute(
             select(
@@ -491,5 +494,5 @@ def test_exit_trigger_on_missed_day(db_engine: Engine) -> None:
 
     assert len(rows) == 1
     assert rows[0].position_id == int(pos_id)
-    # triggered_date is stored as midnight UTC of today (the scan date)
-    assert rows[0].triggered_date.date() == today
+    # triggered_date is stored as midnight UTC of the actual trigger day (D-09)
+    assert rows[0].triggered_date.date() == missed_day
