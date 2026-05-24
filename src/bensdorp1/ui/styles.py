@@ -152,10 +152,12 @@ def _render_kv_block(
 
     Values align at column max_key_len + 1 (colon) + 2 (spaces).
     Empty data guard prevents ValueError from max() on empty sequence.
+    Markup is disabled (markup=False, highlight=False) to prevent Rich markup
+    injection from untrusted caller-supplied dict values (T-05-04).
     """
     if not data:
         return
     max_key_len = max(len(k) for k in data)
     for k, v in data.items():
         spaces = (max_key_len - len(k)) + 2
-        console.print(f"{indent}{k}:{' ' * spaces}{v}")
+        console.print(f"{indent}{k}:{' ' * spaces}{v}", markup=False, highlight=False)
