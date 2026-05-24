@@ -70,16 +70,17 @@ def _store_cash(engine: Engine, amount: float) -> None:
 
     Value stored as f"{amount:.2f}" for deterministic float precision.
     """
+    now = datetime.now(UTC)
     stmt = (
         sqlite_insert(config_table)
         .values(
             key="available_cash",
             value=f"{amount:.2f}",
-            updated_at=datetime.now(UTC),
+            updated_at=now,
         )
         .on_conflict_do_update(
             index_elements=["key"],
-            set_={"value": f"{amount:.2f}", "updated_at": datetime.now(UTC)},
+            set_={"value": f"{amount:.2f}", "updated_at": now},
         )
     )
     with engine.connect() as conn:
