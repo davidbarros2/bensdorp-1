@@ -16,8 +16,8 @@ bensdorp1 is built in fourteen horizontal layers, each completing a technical st
 - [x] **Phase 3: Data Sources** - Constituents fetch, price download, NYSE calendar, rate limiting
  (completed 2026-05-23)
 
-- [x] **Phase 4: Strategy Logic** - All filters, ranking, stop calculations, unit and property tests (completed 2026-05-23)
-- [x] **Phase 5: UI Components** - Style guide, formatting primitives, feedback thresholds, tables (completed 2026-05-24)
+- [x] **Phase 4: Strategy Logic** - All filters, ranking, stop calculations, unit and property tests (completed 2026-05-23)
+- [x] **Phase 5: UI Components** - Style guide, formatting primitives, feedback thresholds, tables (completed 2026-05-24)
 - [ ] **Phase 6: First-Run Init Command** - `init` — directory tree, DB creation, history download, cash declaration
 - [ ] **Phase 7: Scan Command** - `scan` — daily screening, regime/liquidity/momentum filters, exit triggers, buy candidates
 - [ ] **Phase 8: Confirmation Commands** - `buy`, `sell`, `fix` — transaction recording and correction
@@ -201,7 +201,17 @@ Wave 3 (blocked on Waves 1 and 2)
   2. Re-running `bensdorp1 init` on an already-initialized system prints a clear error and exits without modifying the database
   3. The `system_initialized` audit event is written with correct metadata after successful init
 
-**Plans**: TBD
+**Plans**: 2 plans in 2 waves
+
+**Wave 1** — Implementation
+
+- [ ] 06-01-PLAN.md — init.py full interactive flow (guard, welcome, cash loop, multi-step progress, completion summary) + test_cli.py stub list update
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
+- [ ] 06-02-PLAN.md — tests/test_commands/__init__.py + tests/test_commands/test_init.py (4 D-08 scenarios) + full verification gate
+
+**Cross-cutting constraints:** No modifications to ui/, db/, data/, or strategy/; import only from bensdorp1.db and bensdorp1.ui public surfaces (one allowed private import: _render_kv_block from ui/styles); per-symbol loop drives TrackContext for step [3/3]; raise typer.Exit() not sys.exit(); all output wrapped in Text() for markup safety.
 
 ### Phase 7: Scan Command
 
@@ -323,7 +333,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | 3. Data Sources | 4/4 | Complete    | 2026-05-23 |
 | 4. Strategy Logic | 3/3 | Complete    | 2026-05-23 |
 | 5. UI Components | 5/5 | Complete    | 2026-05-24 |
-| 6. First-Run Init Command | 0/TBD | Not started | - |
+| 6. First-Run Init Command | 0/2 | Not started | - |
 | 7. Scan Command | 0/TBD | Not started | - |
 | 8. Confirmation Commands | 0/TBD | Not started | - |
 | 9. Consultation Commands | 0/TBD | Not started | - |
