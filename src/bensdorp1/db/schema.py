@@ -99,6 +99,18 @@ Index(
     unique=True,
 )
 
+scan_exit_triggers: Table = Table(
+    "scan_exit_triggers",
+    metadata,
+    Column("id", Integer, primary_key=True, autoincrement=True),
+    Column("scan_id", Integer, ForeignKey("scans.id"), nullable=False),
+    Column("position_id", Integer, ForeignKey("positions.id"), nullable=False),
+    Column("reason", Text, nullable=False),
+    Column("effective_stop", Float, nullable=False),
+    Column("triggered_date", DateTime(timezone=True), nullable=False),
+)
+Index("ix_scan_exit_triggers_position", scan_exit_triggers.c.position_id)
+
 constituents_cache: Table = Table(
     "constituents_cache",
     metadata,
