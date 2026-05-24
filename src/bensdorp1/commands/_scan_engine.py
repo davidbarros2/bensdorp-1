@@ -714,12 +714,18 @@ def _run_screening(
         candidates: list[Candidate] = []
 
         if regime_active:
+            # Filter out symbols with insufficient data before applying strategy
+            # filters (WR-05: liquidity_filter requires >= 21 rows, momentum_filter
+            # requires >= 201 rows; symbols with fewer rows cause ValueError).
+            constituent_dfs_liquid: dict[str, pd.DataFrame] = {
+                sym: df for sym, df in constituent_dfs.items() if len(df) >= 21
+            }
             # Apply strategy filters in sequence
-            liquid_symbols: list[str] = liquidity_filter(constituent_dfs)
+            liquid_symbols: list[str] = liquidity_filter(constituent_dfs_liquid)
             liquid_dfs: dict[str, pd.DataFrame] = {
-                sym: constituent_dfs[sym]
+                sym: constituent_dfs_liquid[sym]
                 for sym in liquid_symbols
-                if sym in constituent_dfs
+                if sym in constituent_dfs_liquid and len(constituent_dfs_liquid[sym]) >= 201
             }
             momentum_symbols: list[str] = momentum_filter(liquid_dfs)
             momentum_dfs: dict[str, pd.DataFrame] = {
