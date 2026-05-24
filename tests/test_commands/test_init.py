@@ -3,6 +3,7 @@
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
+from sqlalchemy.engine import Engine
 from typer.testing import CliRunner
 
 from bensdorp1.cli import app
@@ -73,6 +74,22 @@ def test_cash_validation_reprompts(tmp_path: Path) -> None:
 
     assert result.exit_code == 0, f"Unexpected exit. Output:\n{result.output}"
     assert result.output.count("Error: Cash must be greater than zero.") == 2
+
+
+def test_store_cash_writes_to_config(db_engine: Engine) -> None:
+    """_store_cash upserts the correct value into the config table."""
+    from sqlalchemy import select
+
+    from bensdorp1.commands.init import _store_cash
+    from bensdorp1.db.schema import config as config_table
+
+    _store_cash(db_engine, 75_000.0)
+
+    with db_engine.connect() as conn:
+        row = conn.execute(
+            select(config_table).where(config_table.c.key == "available_cash")
+        ).one()
+    assert row.value == "75000.00"
 
 
 def test_ctrl_c_during_cash_entry(tmp_path: Path) -> None:
