@@ -151,7 +151,7 @@ def run_scan(
         open_positions = _query_open_positions(engine)
 
         # 5. Update stop levels for missed days + today; detect exit triggers
-        triggered_position_ids: set[int] = set()
+        triggered_position_ids: dict[int, tuple[date, float, float]] = {}
         _update_position_stops(
             engine,
             open_positions,
@@ -481,7 +481,7 @@ def _update_position_stops(
     missed_days: list[date],
     today: date,
     price_dfs: dict[str, pd.DataFrame],
-    triggered_position_ids: set[int],
+    triggered_position_ids: dict[int, tuple[date, float, float]],
 ) -> None:
     """Update position highest_close and trailing_stop for missed days + today.
 
@@ -507,8 +507,10 @@ def _update_position_stops(
             eff_stop: float = compute_effective_stop(pos.initial_stop, new_ts)
 
             if is_exit_triggered(close, eff_stop):
-                # Mark as triggered; do NOT update positions row (freeze per D-07)
-                triggered_position_ids.add(pos.id)
+                # Mark as triggered; store (day, close, eff_stop) for use in
+                # _detect_exit_triggers (CR-02/WR-04: preserve actual trigger day
+                # and the correct effective stop that caused the trigger).
+                triggered_position_ids[pos.id] = (day, close, eff_stop)
             else:
                 # UPDATE positions SET highest_close, trailing_stop (D-17)
                 with engine.connect() as conn:
@@ -532,7 +534,7 @@ def _update_position_stops(
 def _detect_exit_triggers(
     engine: Engine,
     open_positions: list[_OpenPosition],
-    triggered_position_ids: set[int],
+    triggered_position_ids: dict[int, tuple[date, float, float]],
     scan_id: int,
     today: date,
     price_dfs: dict[str, pd.DataFrame],
@@ -559,20 +561,20 @@ def _detect_exit_triggers(
         if pos.id in existing_position_ids:
             continue  # already has a trigger row from prior scan
 
+        # Retrieve the stored (trigger_day, close, eff_stop) from the dict.
+        # These values were computed in _update_position_stops and reflect the
+        # actual day the stop was hit (D-09) and the correct effective stop that
+        # caused the trigger (WR-04: avoids using stale pos.trailing_stop).
+        trigger_day, close_at_trigger, eff_stop = triggered_position_ids[pos.id]
+
         # Determine reason: which stop is the binding constraint
-        eff_stop: float = compute_effective_stop(pos.initial_stop, pos.trailing_stop)
         reason: str = (
             "Trailing stop" if pos.trailing_stop >= pos.initial_stop else "Initial stop"
         )
 
-        # triggered_date: midnight UTC of today (D-09 semantics)
+        # triggered_date: midnight UTC of the actual day the stop was hit (D-09)
         triggered_date_utc: datetime = datetime(
-            today.year, today.month, today.day, tzinfo=UTC
-        )
-
-        # Close at trigger: today's price (or 0.0 if unavailable)
-        close_at_trigger: float = (
-            _get_close_for_day(price_dfs, pos.symbol, today) or 0.0
+            trigger_day.year, trigger_day.month, trigger_day.day, tzinfo=UTC
         )
 
         # INSERT into scan_exit_triggers
