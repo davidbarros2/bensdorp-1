@@ -13,7 +13,7 @@ Every trading day, show the user exactly which positions triggered a stop and wh
 ### Validated
 
 **State management (Phase 2 — Database and Migrations)**
-- [x] SQLite database at ~/bensdorp1/data/bensdorp1.db — schema defined, 7 tables (Validated in Phase 2)
+- [x] SQLite database at ~/bensdorp1/data/bensdorp1.db — schema defined, 8 tables including scan_exit_triggers (Validated in Phase 2 + Phase 7)
 - [x] Automatic backup after every state-changing operation — `create_backup()` via `sqlite3.Connection.backup()` (Validated in Phase 2)
 - [x] Timestamped snapshots in ~/bensdorp1/backups/ (never auto-deleted) — `shutil.copy2` for latest.db (Validated in Phase 2)
 - [x] Structured audit log with 17 event types — `AuditEventType` StrEnum + `log_event()` (Validated in Phase 2)
@@ -44,7 +44,7 @@ Every trading day, show the user exactly which positions triggered a stop and wh
 
 **Commands (17 total)**
 - [x] `init` — first-run setup (Validated in Phase 6)
-- [ ] `scan [--force]` — daily end-of-day screening; exit triggers + buy candidates
+- [x] `scan [--force]` — daily end-of-day screening; exit triggers + buy candidates (Validated in Phase 7)
 - [ ] `last` — show most recent scan output
 - [ ] `history [--limit N] [--since D]` — compact table of past scans
 - [ ] `buy SYMBOL PRICE SHARES [--date D]` — confirm a buy; creates open position
@@ -162,4 +162,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-05-24 — Phase 6 complete (First-Run Init Command — full interactive `bensdorp1 init` flow, 276 tests, 97% coverage, mypy strict clean)*
+*Last updated: 2026-05-24 — Phase 7 complete (Scan Command — `bensdorp1 scan` with exit triggers + buy candidates, 315 tests, 92% coverage, mypy strict clean)*
