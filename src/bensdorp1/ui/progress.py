@@ -203,7 +203,7 @@ class TrackContext:
 
     def _estimate_remaining(self, elapsed: float) -> float:
         """Estimate remaining seconds based on current completion rate."""
-        if self._completed == 0:
+        if self._completed == 0 or elapsed <= 0:
             return 0.0
         rate = self._completed / elapsed
         remaining_items = self._total - self._completed

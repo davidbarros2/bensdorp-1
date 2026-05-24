@@ -8,6 +8,7 @@ from typing import Literal
 
 from rich.console import Console
 from rich.table import Table
+from rich.text import Text
 
 from bensdorp1.ui.styles import _console as _default_console
 
@@ -36,5 +37,5 @@ def render_table(
     for header, justify in columns:
         table.add_column(header, justify=justify)
     for row in rows:
-        table.add_row(*row)
+        table.add_row(*(Text(cell) for cell in row))
     con.print(table)
