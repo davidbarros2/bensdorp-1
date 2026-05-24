@@ -107,5 +107,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-05-24
-Stopped at: Phase 6 complete, ready to plan Phase 7
-Resume file: None
+Stopped at: Phase 7 context gathered — ready to plan
+Resume file: .planning/phases/07-scan-command/07-CONTEXT.md
