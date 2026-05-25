@@ -264,9 +264,9 @@ Wave 3 (blocked on Waves 1 and 2)
 
 **Wave 2** *(blocked on Wave 1; three parallel plans — independent files)*
 
-- [ ] 08-02-PLAN.md — buy.py full CMD-06 implementation + 5 test_buy.py scenarios filled in
-- [ ] 08-03-PLAN.md — sell.py full CMD-07 implementation + 3 test_sell.py scenarios filled in
-- [ ] 08-04-PLAN.md — fix.py full CMD-08 implementation + 3 test_fix.py scenarios filled in
+- [x] 08-02-PLAN.md — buy.py full CMD-06 implementation + 5 test_buy.py scenarios filled in
+- [x] 08-03-PLAN.md — sell.py full CMD-07 implementation + 3 test_sell.py scenarios filled in
+- [x] 08-04-PLAN.md — fix.py full CMD-08 implementation + 3 test_fix.py scenarios filled in
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
@@ -369,7 +369,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | 5. UI Components | 5/5 | Complete    | 2026-05-24 |
 | 6. First-Run Init Command | 2/2 | Complete   | 2026-05-24 |
 | 7. Scan Command | 4/4 | Complete    | 2026-05-24 |
-| 8. Confirmation Commands | 1/5 | In Progress|  |
+| 8. Confirmation Commands | 4/5 | In Progress|  |
 | 9. Consultation Commands | 0/TBD | Not started | - |
 | 10. System Commands | 0/TBD | Not started | - |
 | 11. Catch-Up Logic | 0/TBD | Not started | - |
