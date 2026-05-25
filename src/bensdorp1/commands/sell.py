@@ -7,7 +7,7 @@ from typing import Any
 import typer
 from rich.console import Console
 from rich.text import Text
-from sqlalchemy import select, update
+from sqlalchemy import select, text, update
 
 from bensdorp1._app import app
 from bensdorp1.config import DATA_DIR, MARKET_TZ
@@ -205,6 +205,9 @@ def sell(
         raise typer.Exit()
 
     # G. State-changing write
+    # Two-step UPDATE: the core columns are in the Table object; closed_reason and
+    # closed_manual_reason are added via ALTER TABLE in run_migrations (not in schema.py
+    # DDL), so they must be updated via a parameterized text() statement.
     with engine.connect() as conn:
         conn.execute(
             update(positions)
@@ -213,9 +216,20 @@ def sell(
                 closed_at=sell_dt,
                 exit_price=price,
                 realized_pnl=realized_pnl,
-                closed_reason=closed_reason,
-                closed_manual_reason=closed_manual_reason,
             )
+        )
+        conn.execute(
+            text(
+                "UPDATE positions"
+                " SET closed_reason = :closed_reason,"
+                " closed_manual_reason = :closed_manual_reason"
+                " WHERE id = :position_id"
+            ),
+            {
+                "closed_reason": closed_reason,
+                "closed_manual_reason": closed_manual_reason,
+                "position_id": position_id,
+            },
         )
         conn.commit()
 
