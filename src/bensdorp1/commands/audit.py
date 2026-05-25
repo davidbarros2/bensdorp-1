@@ -38,12 +38,18 @@ def _format_details(payload_str: str | None) -> str:
         return payload_str[:60]
     if isinstance(data, dict):
         if "old" in data and "new" in data:
-            return (
-                f"{format_price(float(data['old']))} →"
-                f" {format_price(float(data['new']))}"
-            )
+            try:
+                return (
+                    f"{format_price(float(data['old']))} →"
+                    f" {format_price(float(data['new']))}"
+                )
+            except (ValueError, TypeError):
+                return str(data)[:60]
         if "price" in data and "shares" in data:
-            return f"{data['shares']} shares @ {format_price(float(data['price']))}"
+            try:
+                return f"{data['shares']} shares @ {format_price(float(data['price']))}"
+            except (ValueError, TypeError):
+                return str(data)[:60]
     return str(data)[:60]
 
 
