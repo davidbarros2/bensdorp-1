@@ -37,7 +37,7 @@ def test_history_shows_compact_table_ordered_by_date_desc(
     """history shows compact table ordered by scan_date DESC with top-3 candidates."""
     with db_engine.connect() as conn:
         # Insert 3 scans in ascending date order
-        r1 = conn.execute(
+        conn.execute(
             insert(scans).values(
                 scan_date=datetime(2026, 5, 19, tzinfo=UTC),
                 regime_active=True,
@@ -47,7 +47,6 @@ def test_history_shows_compact_table_ordered_by_date_desc(
                 created_at=datetime(2026, 5, 19, 20, 0, tzinfo=UTC),
             )
         )
-        scan1_id = r1.inserted_primary_key[0]
 
         r2 = conn.execute(
             insert(scans).values(
@@ -61,7 +60,7 @@ def test_history_shows_compact_table_ordered_by_date_desc(
         )
         scan2_id = r2.inserted_primary_key[0]
 
-        r3 = conn.execute(
+        conn.execute(
             insert(scans).values(
                 scan_date=datetime(2026, 5, 21, tzinfo=UTC),
                 regime_active=False,
@@ -71,7 +70,6 @@ def test_history_shows_compact_table_ordered_by_date_desc(
                 created_at=datetime(2026, 5, 21, 20, 0, tzinfo=UTC),
             )
         )
-        scan3_id = r3.inserted_primary_key[0]
 
         # Add top-3 candidates for scan2 (middle scan)
         conn.execute(
@@ -105,9 +103,6 @@ def test_history_shows_compact_table_ordered_by_date_desc(
             )
         )
         conn.commit()
-        # Keep ids referenced for assertions
-        _ = scan1_id
-        _ = scan3_id
 
     with (
         patch("bensdorp1.commands.history.get_engine", return_value=db_engine),
