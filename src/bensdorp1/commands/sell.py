@@ -159,7 +159,15 @@ def sell(
             )
             raise typer.Exit(code=1)
 
-        closed_reason = _REASON_MAP.get(trigger_row.reason, "stop_trailing")
+        mapped = _REASON_MAP.get(trigger_row.reason)
+        if mapped is None:
+            print_error(
+                f"Unrecognised exit trigger reason: {trigger_row.reason!r}.",
+                body=["Use --manual to record this sell with a custom reason."],
+                console=console,
+            )
+            raise typer.Exit(code=1)
+        closed_reason = mapped
         closed_manual_reason = None
         display_reason = trigger_row.reason
         event_type = AuditEventType.SELL_CONFIRMED

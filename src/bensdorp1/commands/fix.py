@@ -180,6 +180,9 @@ def fix(
                 except ValueError:
                     print_error("Expected a numeric price.", console=console)
                     raise typer.Exit(code=1) from None
+                if new_price <= 0:
+                    print_error("Price must be greater than zero.", console=console)
+                    raise typer.Exit(code=1) from None
             else:
                 new_price = current_entry_close
 
@@ -192,6 +195,9 @@ def fix(
                     print_error(
                         "Expected an integer number of shares.", console=console
                     )
+                    raise typer.Exit(code=1) from None
+                if new_shares <= 0:
+                    print_error("Shares must be greater than zero.", console=console)
                     raise typer.Exit(code=1) from None
             else:
                 new_shares = current_shares
@@ -219,6 +225,9 @@ def fix(
                     new_price = float(clean_price)
                 except ValueError:
                     print_error("Expected a numeric price.", console=console)
+                    raise typer.Exit(code=1) from None
+                if new_price <= 0:
+                    print_error("Price must be greater than zero.", console=console)
                     raise typer.Exit(code=1) from None
             else:
                 new_price = current_exit_price
@@ -264,10 +273,7 @@ def fix(
         new_realized_pnl: float | None = None
     else:
         new_initial_stop = 0.0  # not used for sell
-        if new_price != current_exit_price:
-            new_realized_pnl = (new_price - current_entry_close) * current_shares
-        else:
-            new_realized_pnl = current_realized_pnl
+        new_realized_pnl = (new_price - current_entry_close) * current_shares
 
     # G. Before/after diff (D-23)
     console.print()
