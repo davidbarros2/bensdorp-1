@@ -31,18 +31,12 @@ def test_help_unknown_command_exits_nonzero() -> None:
     assert result.exit_code != 0
 
 
-# init, scan, buy, sell, fix are intentionally absent — full implementations, not stubs
+# init, scan, buy, sell, fix, last, history, portfolio, detail, cash, config, audit
+# are intentionally absent — full implementations, not stubs
 @pytest.mark.parametrize(
     "cmd",
     [
         "restore",
-        "last",
-        "history",
-        "portfolio",
-        "detail",
-        "cash",
-        "config",
-        "audit",
         "status",
         "refresh",
         "validate",
