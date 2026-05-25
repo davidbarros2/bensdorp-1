@@ -295,19 +295,19 @@ Wave 3 (blocked on Waves 1 and 2)
 
 **Wave 1** *(blocked on Wave 0)*
 
-- [ ] 09-02-PLAN.md — last.py (CMD-04) + test_last.py
-- [ ] 09-03-PLAN.md — config.py (CMD-12) + test_config.py
+- [x] 09-02-PLAN.md — last.py (CMD-04) + test_last.py
+- [x] 09-03-PLAN.md — config.py (CMD-12) + test_config.py
 
 **Wave 2** *(blocked on Wave 0)*
 
-- [ ] 09-04-PLAN.md — history.py (CMD-05) + test_history.py
-- [ ] 09-05-PLAN.md — audit.py (CMD-13) + test_audit.py
-- [ ] 09-06-PLAN.md — cash.py (CMD-11) + test_cash.py
+- [x] 09-04-PLAN.md — history.py (CMD-05) + test_history.py
+- [x] 09-05-PLAN.md — audit.py (CMD-13) + test_audit.py
+- [x] 09-06-PLAN.md — cash.py (CMD-11) + test_cash.py
 
 **Wave 3** *(blocked on Wave 0)*
 
-- [ ] 09-07-PLAN.md — portfolio.py (CMD-09) + test_portfolio.py
-- [ ] 09-08-PLAN.md — detail.py (CMD-10) + test_detail.py
+- [x] 09-07-PLAN.md — portfolio.py (CMD-09) + test_portfolio.py
+- [x] 09-08-PLAN.md — detail.py (CMD-10) + test_detail.py
 
 **Wave 4** *(blocked on Waves 1-3 completion)*
 
@@ -396,7 +396,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | 6. First-Run Init Command | 2/2 | Complete   | 2026-05-24 |
 | 7. Scan Command | 4/4 | Complete    | 2026-05-24 |
 | 8. Confirmation Commands | 7/7 | Complete   | 2026-05-25 |
-| 9. Consultation Commands | 1/9 | In Progress|  |
+| 9. Consultation Commands | 8/9 | In Progress|  |
 | 10. System Commands | 0/TBD | Not started | - |
 | 11. Catch-Up Logic | 0/TBD | Not started | - |
 | 12. Validation Mode | 0/TBD | Not started | - |
