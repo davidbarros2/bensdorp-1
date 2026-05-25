@@ -52,12 +52,8 @@ def audit(
     symbol: str | None = typer.Option(
         None, "--symbol", help="Filter by ticker symbol."
     ),
-    since: str | None = typer.Option(
-        None, "--since", help="On or after YYYY-MM-DD."
-    ),
-    until: str | None = typer.Option(
-        None, "--until", help="On or before YYYY-MM-DD."
-    ),
+    since: str | None = typer.Option(None, "--since", help="On or after YYYY-MM-DD."),
+    until: str | None = typer.Option(None, "--until", help="On or before YYYY-MM-DD."),
     type_: AuditEventType | None = typer.Option(  # noqa: B008
         None, "--type", help="Filter by event type."
     ),

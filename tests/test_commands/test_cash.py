@@ -108,9 +108,7 @@ def test_cash_amount_updates_after_confirmation_and_writes_audit_event(
     # Verify DB row was updated
     with db_engine.connect() as conn:
         row = conn.execute(
-            select(config_table.c.value).where(
-                config_table.c.key == "available_cash"
-            )
+            select(config_table.c.value).where(config_table.c.key == "available_cash")
         ).fetchone()
     assert row is not None
     assert row.value == "50000.00"
@@ -151,9 +149,7 @@ def test_cash_amount_n_answer_aborts_without_state_change(
     # Verify DB row is unchanged
     with db_engine.connect() as conn:
         row = conn.execute(
-            select(config_table.c.value).where(
-                config_table.c.key == "available_cash"
-            )
+            select(config_table.c.value).where(config_table.c.key == "available_cash")
         ).fetchone()
     assert row is not None
     assert row.value == "45000.00"

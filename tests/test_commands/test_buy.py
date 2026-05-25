@@ -279,7 +279,7 @@ def test_price_zero_rejected(tmp_path: Path) -> None:
 
     mock_conn.execute.return_value.fetchone.side_effect = [
         MagicMock(symbol="NVDA"),  # C.1 constituent check passes
-        None,                       # C.2 no open position found
+        None,  # C.2 no open position found
     ]
 
     with (
