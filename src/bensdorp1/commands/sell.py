@@ -95,8 +95,7 @@ def sell(
                 positions.c.shares,
                 positions.c.entry_date,
             ).where(
-                (positions.c.symbol == symbol.upper())
-                & (positions.c.closed_at == None)  # noqa: E711
+                (positions.c.symbol == symbol.upper()) & (positions.c.closed_at == None)  # noqa: E711
             )
         ).fetchone()
 
@@ -153,7 +152,9 @@ def sell(
         if trigger_row is None:
             print_error(
                 f"No exit trigger on record for {symbol.upper()}.",
-                body=["To record a manual sell, use: bensdorp1 sell SYMBOL PRICE --manual REASON"],  # noqa: E501
+                body=[
+                    "To record a manual sell, use: bensdorp1 sell SYMBOL PRICE --manual REASON"  # noqa: E501
+                ],
                 console=console,
             )
             raise typer.Exit(code=1)

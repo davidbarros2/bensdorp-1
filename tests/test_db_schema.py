@@ -61,7 +61,7 @@ def test_audit_log_indexes_exist(db_engine: Engine) -> None:
 
 
 def test_positions_columns(db_engine: Engine) -> None:
-    """positions table has exactly the 14 expected columns (Phase 8 adds closed_reason cols)."""
+    """positions table has exactly 14 columns (Phase 8 adds closed_reason cols)."""
     insp = inspect(db_engine)
     cols = {c["name"] for c in insp.get_columns("positions")}
     assert {
