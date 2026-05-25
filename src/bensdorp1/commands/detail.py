@@ -103,6 +103,10 @@ def detail(
         if day_close is None:
             continue  # gap in price data — skip (Pitfall 4)
         running_max = max(running_max, day_close)
+        # Note: trailing_stop is recomputed live from price_daily here.
+        # portfolio.py reads pos.trailing_stop (last-scan value) instead —
+        # the two may diverge if price_daily has rows the scan has not yet
+        # processed. detail.py is the authoritative live-recomputation view.
         trailing_stop = running_max * 0.75
         effective_stop = max(pos_row.initial_stop, trailing_stop)
         history_rows.append(
