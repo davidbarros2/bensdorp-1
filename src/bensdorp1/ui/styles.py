@@ -88,10 +88,13 @@ def format_timezone_pair(dt: datetime) -> str:
 
     Market label is always literal 'ET' — NOT derived from MARKET_TZ.key.
     User label is city name from USER_TZ.key (e.g. 'Lisbon', 'Chicago').
+    SQLite may return timezone-naive datetimes; treat them as UTC.
     """
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=UTC)
     et = dt.astimezone(MARKET_TZ)
     local = dt.astimezone(USER_TZ)
-    city = USER_TZ.key.split("/")[-1]
+    city = (USER_TZ.key or "Unknown").split("/")[-1]
     return f"{et:%H:%M} ET ({local:%H:%M} {city})"
 
 
