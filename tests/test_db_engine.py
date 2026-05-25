@@ -62,3 +62,28 @@ def test_get_engine_returns_engine_instance(tmp_path: Path) -> None:
         assert isinstance(e, Engine)
     finally:
         engine_module._reset_engine_for_testing()
+
+
+def test_run_migrations_adds_closed_reason_columns(db_engine: Engine) -> None:
+    """run_migrations adds closed_reason and closed_manual_reason columns idempotently.
+
+    The db_engine fixture already called metadata.create_all once (schema without the new
+    columns). run_migrations is called a second time here to exercise the ALTER TABLE path.
+    A third call verifies idempotency — OperationalError must NOT propagate.
+    """
+    from sqlalchemy import text
+
+    # Second call: ALTER TABLE path (columns not yet present because schema.py has no them)
+    run_migrations(db_engine)
+
+    with db_engine.connect() as conn:
+        rows = conn.execute(text("PRAGMA table_info(positions)")).fetchall()
+
+    col_names = [row[1] for row in rows]
+    assert "closed_reason" in col_names, f"closed_reason missing; columns: {col_names}"
+    assert "closed_manual_reason" in col_names, (
+        f"closed_manual_reason missing; columns: {col_names}"
+    )
+
+    # Third call: must be idempotent — no exception raised
+    run_migrations(db_engine)
