@@ -287,7 +287,33 @@ Wave 3 (blocked on Waves 1 and 2)
   4. `bensdorp1 cash` prints current cash; `bensdorp1 cash AMOUNT` updates it after confirmation and writes a `cash_updated` event; `bensdorp1 config` prints cash, base directory, timezone, and version
   5. `bensdorp1 audit` returns audit events in most-recent-first order, filtered correctly by any combination of `--symbol`, `--since`, `--until`, `--type`, and `--limit`
 
-**Plans**: TBD
+**Plans**: 9 plans in 5 waves
+
+**Wave 0** — Test scaffolding
+
+- [ ] 09-01-PLAN.md — Wave 0 test stubs for all 7 consultation commands
+
+**Wave 1** *(blocked on Wave 0)*
+
+- [ ] 09-02-PLAN.md — last.py (CMD-04) + test_last.py
+- [ ] 09-03-PLAN.md — config.py (CMD-12) + test_config.py
+
+**Wave 2** *(blocked on Wave 0)*
+
+- [ ] 09-04-PLAN.md — history.py (CMD-05) + test_history.py
+- [ ] 09-05-PLAN.md — audit.py (CMD-13) + test_audit.py
+- [ ] 09-06-PLAN.md — cash.py (CMD-11) + test_cash.py
+
+**Wave 3** *(blocked on Wave 0)*
+
+- [ ] 09-07-PLAN.md — portfolio.py (CMD-09) + test_portfolio.py
+- [ ] 09-08-PLAN.md — detail.py (CMD-10) + test_detail.py
+
+**Wave 4** *(blocked on Waves 1-3 completion)*
+
+- [ ] 09-09-PLAN.md — Verification gate (pytest --cov ≥ 90%, mypy strict, ruff check, ruff format)
+
+**Cross-cutting constraints:** Single file per command (D-09 — same as Phase 8 D-25); use `positions.c.entry_close` NOT entry_price (Pitfall); use `from bensdorp1.db.schema import config as config_table` to avoid shadowing (Pitfall 1); audit `--type` parameter must be named `type_` Python-side (Pitfall 3); cash config key is `"available_cash"` (per init.py line 74, NOT "cash" as RESEARCH.md states); `effective_stop = max(initial_stop, trailing_stop)` computed at read time (Phase 7 D-18); `days_held = len(get_trading_days(entry_date, today))`; `render_kv_block` uses markup=False internally; `confirm_prompt` already prints abort message — never re-print; `Optional[AuditEventType]` Typer annotation auto-validates; all DB writes use parameterized SQLAlchemy queries.
 
 ### Phase 10: System Commands
 
@@ -370,7 +396,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | 6. First-Run Init Command | 2/2 | Complete   | 2026-05-24 |
 | 7. Scan Command | 4/4 | Complete    | 2026-05-24 |
 | 8. Confirmation Commands | 7/7 | Complete   | 2026-05-25 |
-| 9. Consultation Commands | 0/TBD | Not started | - |
+| 9. Consultation Commands | 0/9 | Not started | - |
 | 10. System Commands | 0/TBD | Not started | - |
 | 11. Catch-Up Logic | 0/TBD | Not started | - |
 | 12. Validation Mode | 0/TBD | Not started | - |
