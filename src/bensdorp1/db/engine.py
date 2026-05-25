@@ -8,7 +8,9 @@ import os
 import threading
 from pathlib import Path
 
+from sqlalchemy import text
 from sqlalchemy.engine import URL, Engine, create_engine
+from sqlalchemy.exc import OperationalError
 
 from bensdorp1.db.schema import metadata
 
@@ -67,11 +69,24 @@ def get_engine(path: Path | None = None) -> Engine:
 
 
 def run_migrations(engine: Engine) -> None:
-    """Create all tables idempotently. Called only from bensdorp1 init (Phase 6).
+    """Create all tables and apply incremental schema migrations idempotently.
 
-    Uses checkfirst=True so calling this multiple times never raises.
+    Called by all state-changing commands (buy, sell, fix, init) at command entry.
+    Uses checkfirst=True so the base schema creation never raises on an existing DB.
+    ALTER TABLE statements are wrapped in try/except OperationalError for idempotency —
+    SQLite raises OperationalError: duplicate column name if the column already exists.
     """
     metadata.create_all(engine, checkfirst=True)
+    with engine.connect() as conn:
+        for stmt in [
+            "ALTER TABLE positions ADD COLUMN closed_reason TEXT",
+            "ALTER TABLE positions ADD COLUMN closed_manual_reason TEXT",
+        ]:
+            try:
+                conn.execute(text(stmt))
+                conn.commit()
+            except OperationalError:
+                pass  # column already exists — idempotent
 
 
 def _reset_engine_for_testing(replacement: Engine | None = None) -> None:
