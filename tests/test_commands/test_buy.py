@@ -251,3 +251,46 @@ def test_off_signal_abort(tmp_path: Path) -> None:
     assert result.exit_code == 0
     mock_create_backup.assert_not_called()
     mock_log_event.assert_not_called()
+
+
+def test_invalid_date(tmp_path: Path) -> None:
+    """buy exits code 1 when --date value cannot be parsed as YYYY-MM-DD."""
+    mock_engine = MagicMock()
+
+    with (
+        patch("bensdorp1.commands.buy.DATA_DIR", tmp_path),
+        patch("bensdorp1.commands.buy.get_engine", return_value=mock_engine),
+        patch("bensdorp1.commands.buy.run_migrations"),
+        patch("bensdorp1.commands.buy.create_backup"),
+        patch("bensdorp1.commands.buy.log_event"),
+    ):
+        result = runner.invoke(
+            app, ["buy", "NVDA", "432.50", "23", "--date", "not-a-date"]
+        )
+
+    assert result.exit_code == 1
+    assert "Invalid --date value" in result.output
+
+
+def test_price_zero_rejected(tmp_path: Path) -> None:
+    """buy exits code 1 when price is zero; no DB insert or backup occurs."""
+    mock_engine = MagicMock()
+    mock_conn = mock_engine.connect.return_value.__enter__.return_value
+
+    mock_conn.execute.return_value.fetchone.side_effect = [
+        MagicMock(symbol="NVDA"),  # C.1 constituent check passes
+        None,                       # C.2 no open position found
+    ]
+
+    with (
+        patch("bensdorp1.commands.buy.DATA_DIR", tmp_path),
+        patch("bensdorp1.commands.buy.get_engine", return_value=mock_engine),
+        patch("bensdorp1.commands.buy.run_migrations"),
+        patch("bensdorp1.commands.buy.create_backup") as mock_create_backup,
+        patch("bensdorp1.commands.buy.log_event"),
+    ):
+        result = runner.invoke(app, ["buy", "NVDA", "0.0", "23"])
+
+    assert result.exit_code == 1
+    assert "Price and shares must be greater than zero" in result.output
+    assert mock_create_backup.called is False

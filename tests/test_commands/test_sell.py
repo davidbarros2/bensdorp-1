@@ -205,3 +205,98 @@ def test_manual_sell(db_engine: Engine) -> None:
         ).fetchone()
 
     assert audit_row is not None
+
+
+def test_no_open_position(tmp_path: Path) -> None:
+    """sell exits code 1 with error when no open position exists for the symbol."""
+    mock_engine = MagicMock()
+    mock_conn = mock_engine.connect.return_value.__enter__.return_value
+    mock_conn.execute.return_value.fetchone.return_value = None
+
+    with (
+        patch("bensdorp1.commands.sell.DATA_DIR", tmp_path),
+        patch("bensdorp1.commands.sell.get_engine", return_value=mock_engine),
+        patch("bensdorp1.commands.sell.run_migrations"),
+    ):
+        result = runner.invoke(app, ["sell", "AAPL", "178.20"])
+
+    assert result.exit_code == 1
+    assert "No open position for" in result.output
+
+
+def _open_pos_conn(entry_date: datetime) -> MagicMock:
+    """Return a mock conn whose first fetchone returns a valid open position row."""
+    mock_conn = MagicMock()
+    mock_conn.execute.return_value.fetchone.return_value = MagicMock(
+        id=1,
+        entry_close=182.50,
+        shares=50,
+        entry_date=entry_date,
+    )
+    return mock_conn
+
+
+def test_sell_price_zero_rejected(tmp_path: Path) -> None:
+    """sell exits code 1 when price is zero after open position is found."""
+    mock_engine = MagicMock()
+    mock_engine.connect.return_value.__enter__.return_value = _open_pos_conn(
+        datetime(2026, 4, 1, tzinfo=UTC)
+    )
+    mock_engine.connect.return_value.__exit__ = MagicMock(return_value=False)
+
+    with (
+        patch("bensdorp1.commands.sell.DATA_DIR", tmp_path),
+        patch("bensdorp1.commands.sell.get_engine", return_value=mock_engine),
+        patch("bensdorp1.commands.sell.run_migrations"),
+    ):
+        result = runner.invoke(app, ["sell", "AAPL", "0.0"])
+
+    assert result.exit_code == 1
+    assert "Sell price must be greater than zero" in result.output
+
+
+def test_sell_unrecognised_trigger_reason(tmp_path: Path) -> None:
+    """sell exits code 1 for an unrecognised exit trigger reason (WR-01 fix)."""
+    mock_engine = MagicMock()
+    mock_conn = MagicMock()
+    mock_engine.connect.return_value.__enter__ = MagicMock(return_value=mock_conn)
+    mock_engine.connect.return_value.__exit__ = MagicMock(return_value=False)
+
+    mock_conn.execute.return_value.fetchone.side_effect = [
+        MagicMock(
+            id=1,
+            entry_close=182.50,
+            shares=50,
+            entry_date=datetime(2026, 4, 1, tzinfo=UTC),
+        ),
+        MagicMock(reason="unknown_weird_reason"),
+    ]
+
+    with (
+        patch("bensdorp1.commands.sell.DATA_DIR", tmp_path),
+        patch("bensdorp1.commands.sell.get_engine", return_value=mock_engine),
+        patch("bensdorp1.commands.sell.run_migrations"),
+    ):
+        result = runner.invoke(app, ["sell", "AAPL", "178.20"])
+
+    assert result.exit_code == 1
+    assert "Unrecognised exit trigger reason" in result.output
+
+
+def test_sell_date_before_entry(tmp_path: Path) -> None:
+    """sell exits code 1 when --date is earlier than the position entry date."""
+    mock_engine = MagicMock()
+    mock_engine.connect.return_value.__enter__.return_value = _open_pos_conn(
+        datetime(2026, 4, 1, tzinfo=UTC)
+    )
+    mock_engine.connect.return_value.__exit__ = MagicMock(return_value=False)
+
+    with (
+        patch("bensdorp1.commands.sell.DATA_DIR", tmp_path),
+        patch("bensdorp1.commands.sell.get_engine", return_value=mock_engine),
+        patch("bensdorp1.commands.sell.run_migrations"),
+    ):
+        result = runner.invoke(app, ["sell", "AAPL", "178.20", "--date", "2026-03-01"])
+
+    assert result.exit_code == 1
+    assert "2026-03-01" in result.output
