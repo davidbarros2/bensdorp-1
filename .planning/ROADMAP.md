@@ -291,7 +291,7 @@ Wave 3 (blocked on Waves 1 and 2)
 
 **Wave 0** — Test scaffolding
 
-- [ ] 09-01-PLAN.md — Wave 0 test stubs for all 7 consultation commands
+- [x] 09-01-PLAN.md — Wave 0 test stubs for all 7 consultation commands
 
 **Wave 1** *(blocked on Wave 0)*
 
@@ -396,7 +396,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | 6. First-Run Init Command | 2/2 | Complete   | 2026-05-24 |
 | 7. Scan Command | 4/4 | Complete    | 2026-05-24 |
 | 8. Confirmation Commands | 7/7 | Complete   | 2026-05-25 |
-| 9. Consultation Commands | 0/9 | Not started | - |
+| 9. Consultation Commands | 1/9 | In Progress|  |
 | 10. System Commands | 0/TBD | Not started | - |
 | 11. Catch-Up Logic | 0/TBD | Not started | - |
 | 12. Validation Mode | 0/TBD | Not started | - |
