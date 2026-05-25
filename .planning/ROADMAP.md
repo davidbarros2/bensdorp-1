@@ -19,7 +19,7 @@ bensdorp1 is built in fourteen horizontal layers, each completing a technical st
 - [x] **Phase 4: Strategy Logic** - All filters, ranking, stop calculations, unit and property tests (completed 2026-05-23)
 - [x] **Phase 5: UI Components** - Style guide, formatting primitives, feedback thresholds, tables (completed 2026-05-24)
 - [x] **Phase 6: First-Run Init Command** - `init` — directory tree, DB creation, history download, cash declaration (completed 2026-05-24)
-- [x] **Phase 7: Scan Command** - `scan` — daily screening, regime/liquidity/momentum filters, exit triggers, buy candidates (completed 2026-05-24)
+- [x] **Phase 7: Scan Command** - `scan` — daily screening, regime/liquidity/momentum filters, exit triggers, buy candidates (completed 2026-05-24)
 - [ ] **Phase 8: Confirmation Commands** - `buy`, `sell`, `fix` — transaction recording and correction
 - [ ] **Phase 9: Consultation Commands** - `portfolio`, `detail`, `last`, `history`, `cash`, `config`, `audit`
 - [ ] **Phase 10: System Commands** - `status`, `refresh`, `restore`
@@ -256,7 +256,23 @@ Wave 3 (blocked on Waves 1 and 2)
   2. `bensdorp1 sell SYMBOL PRICE` computes realized P&L, closes the position, and writes both a `sell_confirmed` (or `sell_manual` with `--manual REASON`) audit event
   3. `bensdorp1 fix SYMBOL` interactively corrects the last transaction, displays a before/after diff with position impact, preserves the original record in the audit log, and writes a `transaction_corrected` event
 
-**Plans**: TBD
+**Plans**: 5 plans in 3 waves
+
+**Wave 1** — Schema migration + Wave-0 test scaffolds
+
+- [ ] 08-01-PLAN.md — `db/engine.py` ALTER TABLE migrations (closed_reason, closed_manual_reason) + 11 skeleton test stubs in test_buy/test_sell/test_fix
+
+**Wave 2** *(blocked on Wave 1; three parallel plans — independent files)*
+
+- [ ] 08-02-PLAN.md — buy.py full CMD-06 implementation + 5 test_buy.py scenarios filled in
+- [ ] 08-03-PLAN.md — sell.py full CMD-07 implementation + 3 test_sell.py scenarios filled in
+- [ ] 08-04-PLAN.md — fix.py full CMD-08 implementation + 3 test_fix.py scenarios filled in
+
+**Wave 3** *(blocked on Wave 2 completion)*
+
+- [ ] 08-05-PLAN.md — Full verification gate (pytest --cov >= 90%, mypy strict, ruff check, ruff format check)
+
+**Cross-cutting constraints:** Single file per command (no engine split per D-25); no shared helper module (D-26 — duplication acceptable); always use `positions.c.entry_close` (NOT entry_price) — Pitfall 3; `Text()` wrap for all `console.print` literals; SQLAlchemy parameterized queries only; SEPARATOR = "=" * 64; closed_reason and closed_manual_reason live ONLY in run_migrations ALTER TABLE — schema.py unchanged (D-01); buy uses two-prompt off-signal flow (D-06); sell uses EARLIEST trigger row ORDER BY id ASC (D-12 / Pitfall 2); fix uses raw `input()` for field prompts (A1); fix NEVER mutates trailing_stop or highest_close (D-22); all confirmation flows handle KeyboardInterrupt without re-printing the abort message (confirm_prompt already prints it).
 
 ### Phase 9: Consultation Commands
 
@@ -353,7 +369,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | 5. UI Components | 5/5 | Complete    | 2026-05-24 |
 | 6. First-Run Init Command | 2/2 | Complete   | 2026-05-24 |
 | 7. Scan Command | 4/4 | Complete    | 2026-05-24 |
-| 8. Confirmation Commands | 0/TBD | Not started | - |
+| 8. Confirmation Commands | 0/5 | Planned | - |
 | 9. Consultation Commands | 0/TBD | Not started | - |
 | 10. System Commands | 0/TBD | Not started | - |
 | 11. Catch-Up Logic | 0/TBD | Not started | - |
