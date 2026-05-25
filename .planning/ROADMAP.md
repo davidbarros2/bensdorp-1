@@ -21,7 +21,7 @@ bensdorp1 is built in fourteen horizontal layers, each completing a technical st
 - [x] **Phase 6: First-Run Init Command** - `init` — directory tree, DB creation, history download, cash declaration (completed 2026-05-24)
 - [x] **Phase 7: Scan Command** - `scan` — daily screening, regime/liquidity/momentum filters, exit triggers, buy candidates (completed 2026-05-24)
 - [x] **Phase 8: Confirmation Commands** - `buy`, `sell`, `fix` — transaction recording and correction (completed 2026-05-25)
-- [ ] **Phase 9: Consultation Commands** - `portfolio`, `detail`, `last`, `history`, `cash`, `config`, `audit`
+- [x] **Phase 9: Consultation Commands** - `portfolio`, `detail`, `last`, `history`, `cash`, `config`, `audit` (completed 2026-05-25)
 - [ ] **Phase 10: System Commands** - `status`, `refresh`, `restore`
 - [ ] **Phase 11: Catch-Up Logic** - Absence reconstruction, split detection, delisted position handling
 - [ ] **Phase 12: Validation Mode** - `validate DATE` — stateless historical verification
@@ -311,7 +311,7 @@ Wave 3 (blocked on Waves 1 and 2)
 
 **Wave 4** *(blocked on Waves 1-3 completion)*
 
-- [ ] 09-09-PLAN.md — Verification gate (pytest --cov ≥ 90%, mypy strict, ruff check, ruff format)
+- [x] 09-09-PLAN.md — Verification gate (pytest --cov ≥ 90%, mypy strict, ruff check, ruff format)
 
 **Cross-cutting constraints:** Single file per command (D-09 — same as Phase 8 D-25); use `positions.c.entry_close` NOT entry_price (Pitfall); use `from bensdorp1.db.schema import config as config_table` to avoid shadowing (Pitfall 1); audit `--type` parameter must be named `type_` Python-side (Pitfall 3); cash config key is `"available_cash"` (per init.py line 74, NOT "cash" as RESEARCH.md states); `effective_stop = max(initial_stop, trailing_stop)` computed at read time (Phase 7 D-18); `days_held = len(get_trading_days(entry_date, today))`; `render_kv_block` uses markup=False internally; `confirm_prompt` already prints abort message — never re-print; `Optional[AuditEventType]` Typer annotation auto-validates; all DB writes use parameterized SQLAlchemy queries.
 
@@ -396,7 +396,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | 6. First-Run Init Command | 2/2 | Complete   | 2026-05-24 |
 | 7. Scan Command | 4/4 | Complete    | 2026-05-24 |
 | 8. Confirmation Commands | 7/7 | Complete   | 2026-05-25 |
-| 9. Consultation Commands | 8/9 | In Progress|  |
+| 9. Consultation Commands | 9/9 | Complete   | 2026-05-25 |
 | 10. System Commands | 0/TBD | Not started | - |
 | 11. Catch-Up Logic | 0/TBD | Not started | - |
 | 12. Validation Mode | 0/TBD | Not started | - |
