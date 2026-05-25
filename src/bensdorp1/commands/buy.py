@@ -83,8 +83,7 @@ def buy(
         # 2. No-open-position check
         open_pos_row = conn.execute(
             select(positions.c.id).where(
-                (positions.c.symbol == symbol.upper())
-                & (positions.c.closed_at == None)  # noqa: E711
+                (positions.c.symbol == symbol.upper()) & (positions.c.closed_at == None)  # noqa: E711
             )
         ).fetchone()
         if open_pos_row is not None:

@@ -59,8 +59,7 @@ def fix(
                 positions.c.shares,
                 positions.c.initial_stop,
             ).where(
-                (positions.c.symbol == symbol.upper())
-                & (positions.c.closed_at == None)  # noqa: E711
+                (positions.c.symbol == symbol.upper()) & (positions.c.closed_at == None)  # noqa: E711
             )
         ).fetchone()
 
@@ -123,8 +122,7 @@ def fix(
         if target_kind == "buy":
             kv_data: dict[str, str] = {
                 "Transaction": (
-                    f"Buy {symbol.upper()} on"
-                    f" {format_date(current_entry_date.date())}"
+                    f"Buy {symbol.upper()} on {format_date(current_entry_date.date())}"
                 ),
                 "Date": format_date(current_entry_date.date()),
                 "Price": format_price(current_entry_close),
@@ -133,8 +131,7 @@ def fix(
         else:
             kv_data = {
                 "Transaction": (
-                    f"Sell {symbol.upper()} on"
-                    f" {format_date(current_closed_at.date())}"
+                    f"Sell {symbol.upper()} on {format_date(current_closed_at.date())}"
                 ),
                 "Date": format_date(current_closed_at.date()),
                 "Price": format_price(current_exit_price),
@@ -145,9 +142,7 @@ def fix(
 
         render_kv_block(kv_data, console)
         console.print()
-        confirmed = confirm_prompt(
-            "Is this the transaction to fix?", console=console
-        )
+        confirmed = confirm_prompt("Is this the transaction to fix?", console=console)
     except KeyboardInterrupt:
         console.print()
         console.print(Text("Operation aborted. No changes were made."))
@@ -362,9 +357,7 @@ def fix(
             else "N/A"
         )
         new_pnl_str = (
-            format_price(new_realized_pnl)
-            if new_realized_pnl is not None
-            else "N/A"
+            format_price(new_realized_pnl) if new_realized_pnl is not None else "N/A"
         )
         render_kv_block(
             {"Realized P&L": f"{old_pnl_str} -> {new_pnl_str}"},

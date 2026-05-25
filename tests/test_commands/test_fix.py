@@ -101,9 +101,7 @@ def test_price_change_updates_stop(db_engine: Engine) -> None:
     ):
         # y to identify, Enter to keep Date, "432.75" for Price, Enter to keep Shares,
         # y to confirm correction
-        invoke_result = runner.invoke(
-            app, ["fix", "NVDA"], input="y\n\n432.75\n\ny\n"
-        )
+        invoke_result = runner.invoke(app, ["fix", "NVDA"], input="y\n\n432.75\n\ny\n")
 
     assert invoke_result.exit_code == 0, f"Output:\n{invoke_result.output}"
     assert "Transaction corrected" in invoke_result.output

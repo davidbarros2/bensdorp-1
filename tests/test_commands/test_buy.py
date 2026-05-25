@@ -109,9 +109,9 @@ def test_off_signal_warning(tmp_path: Path) -> None:
 
     mock_conn.execute.return_value.fetchone.side_effect = [
         constituent_mock,  # 1. constituent check passes
-        None,              # 2. no open position
-        scan_mock,         # 3. most recent scan found
-        None,              # 4. symbol NOT in scan_candidates top 10
+        None,  # 2. no open position
+        scan_mock,  # 3. most recent scan found
+        None,  # 4. symbol NOT in scan_candidates top 10
     ]
 
     with (
@@ -231,9 +231,9 @@ def test_off_signal_abort(tmp_path: Path) -> None:
 
     mock_conn.execute.return_value.fetchone.side_effect = [
         constituent_mock,  # 1. constituent check passes
-        None,              # 2. no open position
-        scan_mock,         # 3. most recent scan found
-        None,              # 4. symbol NOT in scan_candidates top 10
+        None,  # 2. no open position
+        scan_mock,  # 3. most recent scan found
+        None,  # 4. symbol NOT in scan_candidates top 10
     ]
 
     mock_create_backup = MagicMock()
