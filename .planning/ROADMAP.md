@@ -369,7 +369,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | 5. UI Components | 5/5 | Complete    | 2026-05-24 |
 | 6. First-Run Init Command | 2/2 | Complete   | 2026-05-24 |
 | 7. Scan Command | 4/4 | Complete    | 2026-05-24 |
-| 8. Confirmation Commands | 5/5 | Complete   | 2026-05-25 |
+| 8. Confirmation Commands | 7/7 | Complete   | 2026-05-25 |
 | 9. Consultation Commands | 0/TBD | Not started | - |
 | 10. System Commands | 0/TBD | Not started | - |
 | 11. Catch-Up Logic | 0/TBD | Not started | - |
