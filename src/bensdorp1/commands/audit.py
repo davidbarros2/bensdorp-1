@@ -40,7 +40,7 @@ def _format_details(payload_str: str | None) -> str:
         if "old" in data and "new" in data:
             try:
                 return (
-                    f"{format_price(float(data['old']))} →"
+                    f"{format_price(float(data['old']))} ->"
                     f" {format_price(float(data['new']))}"
                 )
             except (ValueError, TypeError):
