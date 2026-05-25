@@ -54,6 +54,8 @@ positions: Table = Table(
     Column("closed_at", DateTime(timezone=True), nullable=True),
     Column("exit_price", Float, nullable=True),
     Column("realized_pnl", Float, nullable=True),
+    Column("closed_reason", Text, nullable=True),
+    Column("closed_manual_reason", Text, nullable=True),
 )
 Index(
     "ix_positions_open_symbol",
