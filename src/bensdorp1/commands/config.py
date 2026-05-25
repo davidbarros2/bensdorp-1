@@ -1,6 +1,6 @@
 """Show current system configuration (CMD-12)."""
 
-from importlib.metadata import version as pkg_version
+from importlib.metadata import PackageNotFoundError, version as pkg_version
 
 import typer
 from rich.console import Console
@@ -32,11 +32,16 @@ def config() -> None:
     else:
         cash_str = "Not configured"
 
+    tz_label = (USER_TZ.key or "Unknown").split("/")[-1]
+    try:
+        version_str = pkg_version("bensdorp1")
+    except PackageNotFoundError:
+        version_str = "unknown"
     data: dict[str, str] = {
         "Cash": cash_str,
         "Data directory": str(DATA_DIR),
-        "Timezone": f"{USER_TZ.key.split('/')[-1]} (BENSDORP1_USER_TZ)",
-        "Version": pkg_version("bensdorp1"),
+        "Timezone": f"{tz_label} (BENSDORP1_USER_TZ)",
+        "Version": version_str,
     }
     render_kv_block(data, console)
     raise typer.Exit()
