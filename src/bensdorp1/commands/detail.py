@@ -38,8 +38,7 @@ def detail(
     with engine.connect() as conn:
         pos_row = conn.execute(
             select(positions).where(
-                (positions.c.symbol == symbol.upper())
-                & (positions.c.closed_at == None)  # noqa: E711
+                (positions.c.symbol == symbol.upper()) & (positions.c.closed_at == None)  # noqa: E711
             )
         ).fetchone()
 
@@ -83,14 +82,10 @@ def detail(
         ).fetchall()
 
     # F. Build close map
-    close_map: dict[date, float] = {
-        r.trade_date.date(): r.close for r in price_rows
-    }
+    close_map: dict[date, float] = {r.trade_date.date(): r.close for r in price_rows}
 
     if not close_map:
-        print_info(
-            "No price history available yet for this position.", console=console
-        )
+        print_info("No price history available yet for this position.", console=console)
         raise typer.Exit()
 
     # G. Walk every NYSE trading day from entry_date+1 to last_price_date

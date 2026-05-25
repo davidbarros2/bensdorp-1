@@ -242,3 +242,115 @@ def test_audit_empty_state_when_no_events_match(
 
     assert result.exit_code == 0
     assert "No audit events match" in result.output
+
+
+def test_audit_invalid_since_exits_code_1(
+    db_engine: Engine,
+    tmp_path: object,
+) -> None:
+    """audit --since with invalid date format exits code 1."""
+    with pytest.MonkeyPatch().context() as mp:
+        mp.setattr("bensdorp1.commands.audit.get_engine", lambda _: db_engine)
+        mp.setattr("bensdorp1.commands.audit.DATA_DIR", tmp_path)
+        mp.setattr("bensdorp1.commands.audit.run_migrations", lambda _: None)
+        result = runner.invoke(app, ["audit", "--since", "not-a-date"])
+
+    assert result.exit_code == 1
+    assert "Invalid --since/--until" in result.output
+
+
+def test_audit_invalid_until_exits_code_1(
+    db_engine: Engine,
+    tmp_path: object,
+) -> None:
+    """audit --until with invalid date format exits code 1."""
+    with pytest.MonkeyPatch().context() as mp:
+        mp.setattr("bensdorp1.commands.audit.get_engine", lambda _: db_engine)
+        mp.setattr("bensdorp1.commands.audit.DATA_DIR", tmp_path)
+        mp.setattr("bensdorp1.commands.audit.run_migrations", lambda _: None)
+        result = runner.invoke(app, ["audit", "--until", "bad-date"])
+
+    assert result.exit_code == 1
+    assert "Invalid --since/--until" in result.output
+
+
+def test_audit_format_details_null_payload(
+    db_engine: Engine,
+    tmp_path: object,
+) -> None:
+    """audit shows em-dash for NULL payload rows."""
+    with db_engine.connect() as conn:
+        conn.execute(
+            insert(audit_log).values(
+                event_type="scan_run",
+                occurred_at=datetime(2026, 5, 20, 14, 30, tzinfo=UTC),
+                symbol=None,
+                payload=None,
+            )
+        )
+        conn.commit()
+
+    with pytest.MonkeyPatch().context() as mp:
+        mp.setattr("bensdorp1.commands.audit.get_engine", lambda _: db_engine)
+        mp.setattr("bensdorp1.commands.audit.DATA_DIR", tmp_path)
+        mp.setattr("bensdorp1.commands.audit.run_migrations", lambda _: None)
+        result = runner.invoke(app, ["audit"])
+
+    assert result.exit_code == 0
+    assert "scan_run" in result.output
+    # NULL payload renders as em-dash
+    assert "—" in result.output
+
+
+def test_audit_format_details_invalid_json_payload(
+    db_engine: Engine,
+    tmp_path: object,
+) -> None:
+    """audit truncates unparseable JSON payload."""
+    with db_engine.connect() as conn:
+        conn.execute(
+            insert(audit_log).values(
+                event_type="scan_run",
+                occurred_at=datetime(2026, 5, 20, 14, 30, tzinfo=UTC),
+                symbol=None,
+                payload="not-json-at-all",
+            )
+        )
+        conn.commit()
+
+    with pytest.MonkeyPatch().context() as mp:
+        mp.setattr("bensdorp1.commands.audit.get_engine", lambda _: db_engine)
+        mp.setattr("bensdorp1.commands.audit.DATA_DIR", tmp_path)
+        mp.setattr("bensdorp1.commands.audit.run_migrations", lambda _: None)
+        result = runner.invoke(app, ["audit"])
+
+    assert result.exit_code == 0
+    # Truncated raw string shown (up to 60 chars)
+    assert "not-json-at-all" in result.output
+
+
+def test_audit_format_details_unknown_dict_payload(
+    db_engine: Engine,
+    tmp_path: object,
+) -> None:
+    """audit falls back to str() for unknown dict payload structure."""
+    with db_engine.connect() as conn:
+        conn.execute(
+            insert(audit_log).values(
+                event_type="scan_run",
+                occurred_at=datetime(2026, 5, 20, 14, 30, tzinfo=UTC),
+                symbol=None,
+                payload='{"unknown_key": "some_value"}',
+            )
+        )
+        conn.commit()
+
+    with pytest.MonkeyPatch().context() as mp:
+        mp.setattr("bensdorp1.commands.audit.get_engine", lambda _: db_engine)
+        mp.setattr("bensdorp1.commands.audit.DATA_DIR", tmp_path)
+        mp.setattr("bensdorp1.commands.audit.run_migrations", lambda _: None)
+        result = runner.invoke(app, ["audit"])
+
+    assert result.exit_code == 0
+    # Falls back to str(data)[:60] — both key and value should appear
+    assert "unknown_key" in result.output or "some_value" in result.output

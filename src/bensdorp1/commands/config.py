@@ -24,9 +24,7 @@ def config() -> None:
 
     with engine.connect() as conn:
         cash_row = conn.execute(
-            select(config_table.c.value).where(
-                config_table.c.key == "available_cash"
-            )
+            select(config_table.c.value).where(config_table.c.key == "available_cash")
         ).fetchone()
 
     if cash_row is not None and cash_row.value is not None:

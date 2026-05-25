@@ -275,7 +275,7 @@ def test_sell_path_price_zero_rejected(tmp_path: Path) -> None:
     mock_closed.realized_pnl = (178.20 - 182.50) * 50
 
     mock_conn.execute.return_value.fetchone.side_effect = [
-        None,         # open_row lookup → no open position
+        None,  # open_row lookup → no open position
         mock_closed,  # closed_row lookup → closed position found
     ]
 
