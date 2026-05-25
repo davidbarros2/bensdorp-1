@@ -214,7 +214,7 @@ def test_audit_limit_flag_returns_at_most_n_events(
 
     assert result.exit_code == 0
     # Each row shows "buy_confirmed"; there should be exactly 3 occurrences
-    assert result.output.count("buy_confirmed") <= 3
+    assert result.output.count("buy_confirmed") == 3
 
 
 def test_audit_empty_state_when_no_events_match(
