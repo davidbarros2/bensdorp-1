@@ -1,45 +1,23 @@
 ---
 phase: 08-confirmation-commands
 verified: 2026-05-25T20:30:00Z
-status: gaps_found
-score: 12/14 must-haves verified
+re_verified: 2026-05-25T21:00:00Z
+status: verified
+score: 14/14 must-haves verified
 overrides_applied: 0
-gaps:
+gaps_resolved:
   - truth: "fix.py validates new_price > 0 and new_shares > 0 before writing"
-    status: failed
-    reason: "The field-editing loop in fix.py parses new_price (float) and new_shares (int) from raw input() but has no range check. A value of 0 or a negative number passes float()/int() parsing and is written to the DB. buy.py has the equivalent guard (line 98: if price <= 0 or shares <= 0). fix.py has no such gate. This is confirmed by code review finding CR-01 and grep returning no matches for new_price <= 0 or new_shares <= 0 in fix.py."
-    artifacts:
-      - path: "src/bensdorp1/commands/fix.py"
-        issue: "Lines ~180/191/220 parse new_price and new_shares but apply no > 0 guard before writing to DB via update(positions)"
-    missing:
-      - "Add 'if new_price <= 0: print_error(...) + raise typer.Exit(code=1) from None' after float() parse in both buy and sell branches"
-      - "Add 'if new_shares <= 0: print_error(...) + raise typer.Exit(code=1) from None' after int() parse in buy branch"
+    resolved_by: "Plan 08-06 — added range guards at fix.py lines 183-185 (buy price), 199-201 (buy shares), 229-231 (sell price); all 3 tests pass"
   - truth: "Test coverage >= 90% (TEST-02) for all Phase 8 command modules"
-    status: failed
-    reason: "08-05-SUMMARY.md (the phase's own quality gate report, not a SUMMARY claim) documents measured coverage: fix.py 56%, buy.py 82%, sell.py 84%, total 87%. The TEST-02 requirement is >= 90%. The sell-side fix path has zero test coverage (confirmed in REVIEW.md WR-03). This is an observable code-quality requirement failure, not a documentation gap."
-    artifacts:
-      - path: "src/bensdorp1/commands/fix.py"
-        issue: "56% coverage — sell-side path (closed position date/price/manual_reason edits, realized_pnl recalc, diff rendering) completely untested"
-      - path: "src/bensdorp1/commands/buy.py"
-        issue: "82% coverage — error paths (invalid --date, price/shares <= 0, off-signal abort) not covered"
-      - path: "src/bensdorp1/commands/sell.py"
-        issue: "84% coverage — error paths (invalid --date, price <= 0, sell_date < entry_date) not covered"
-    missing:
-      - "Add integration test for fix sell-path: seed a closed position, fix with price change, assert exit_price/realized_pnl/audit_log updated"
-      - "Add coverage for fix.py lines 102-110, 134-144, 169-173, 185-187, 194-200, 206-242"
-      - "Add coverage for buy.py/sell.py error-exit branches to bring total above 90%"
-human_verification:
-  - test: "Run bensdorp1 fix SYMBOL and enter 0 for price"
-    expected: "Command should print an error and exit with code 1 without writing to DB"
-    why_human: "This is the unfixed CR-01 gap — automated test would need to be written as part of the fix"
+    resolved_by: "Plan 08-07 — 21 new tests; fix.py 90%, buy.py 90%, sell.py 94%; 29 tests total passing"
 ---
 
 # Phase 8: Confirmation Commands Verification Report
 
 **Phase Goal:** Implement confirmation commands (buy, sell, fix) for recording and correcting transactions
 **Verified:** 2026-05-25T20:30:00Z
-**Status:** gaps_found
-**Re-verification:** No — initial verification
+**Re-verified:** 2026-05-25T21:00:00Z (Plans 06 and 07 closed both gaps)
+**Status:** verified — 14/14 truths verified
 
 ---
 
@@ -61,10 +39,10 @@ human_verification:
 | 10 | CMD-07 sell: P&L computed (price - entry_close) * shares and pct | VERIFIED | sell.py L171-172; test_happy_path_normal asserts realized_pnl |
 | 11 | CMD-07 sell: --manual bypass, closed_reason='manual', SELL_MANUAL | VERIFIED | sell.py L138-142; test_manual_sell passes |
 | 12 | CMD-07 sell: UPDATE positions with closed_reason, backup, audit | VERIFIED | sell.py L213-249 two-step UPDATE + create_backup + log_event; SELL_CONFIRMED and SELL_MANUAL both present |
-| 13 | CMD-08 fix: new_price > 0 and new_shares > 0 validated before write | FAILED | No range check found in fix.py. grep for `new_price <= 0`, `new_shares <= 0`, `new_price > 0`, `new_shares > 0` returns zero matches. CR-01 from code review confirms this gap. |
-| 14 | Test coverage >= 90% (TEST-02) | FAILED | 08-05-SUMMARY quality gate documents 87% total; fix.py at 56%, buy.py at 82%, sell.py at 84%. sell-side fix path has no test coverage. |
+| 13 | CMD-08 fix: new_price > 0 and new_shares > 0 validated before write | VERIFIED | Plan 08-06 added guards: fix.py L183-185 (buy price), L199-201 (buy shares), L229-231 (sell price); tests_buy_path_price/shares_zero_rejected and test_sell_path_price_zero_rejected pass |
+| 14 | Test coverage >= 90% (TEST-02) | VERIFIED | Plan 08-07: fix.py 90%, buy.py 90%, sell.py 94%; 29 tests passing |
 
-**Score:** 12/14 truths verified
+**Score:** 14/14 truths verified
 
 ---
 
@@ -112,8 +90,8 @@ human_verification:
 | Artifact | Data Variable | Source | Produces Real Data | Status |
 |----------|---------------|--------|--------------------|--------|
 | buy.py | positions row | `insert(positions).values(...)` | Yes — parameterized insert with user-supplied price/shares | FLOWING |
-| sell.py | closed position | `update(positions).where(id).values(closed_at, exit_price, realized_pnl)` + `text()` for closed_reason | Yes — two-step UPDATE, both parameterized | FLOWING |
-| fix.py | corrected position | `update(positions).where(id).values(entry_close, shares, initial_stop)` or sell cols | Yes — UPDATE with validated user input | FLOWING (with gap: new_price/new_shares not range-checked before write) |
+| sell.py | closed position | `update(positions).where(id).values(closed_at, exit_price, realized_pnl, closed_reason, closed_manual_reason)` | Yes — single ORM UPDATE (Plan 08-06 review fix consolidated two-step) | FLOWING |
+| fix.py | corrected position | `update(positions).where(id).values(entry_close, shares, initial_stop)` or sell cols | Yes — UPDATE with range-validated user input (Plan 08-06) | FLOWING |
 
 ---
 
@@ -121,7 +99,7 @@ human_verification:
 
 | Behavior | Command | Result | Status |
 |----------|---------|--------|--------|
-| 11 Phase 8 tests pass | `uv run pytest test_buy.py test_sell.py test_fix.py -v` | 11 PASSED, 0 FAILED, 0 SKIPPED | PASS |
+| 29 Phase 8 tests pass | `uv run pytest test_buy.py test_sell.py test_fix.py -v` | 29 PASSED, 0 FAILED, 0 SKIPPED | PASS |
 | ruff check on command files | `uv run ruff check src/bensdorp1/commands/{buy,sell,fix}.py` | All checks passed | PASS |
 | ruff format on command files | `uv run ruff format --check src/bensdorp1/commands/{buy,sell,fix}.py` | 3 files already formatted | PASS |
 | mypy strict on command files | `uv run mypy src/bensdorp1/commands/{buy,sell,fix}.py --strict` | Success: no issues found | PASS |
@@ -146,8 +124,8 @@ Step 7c: SKIPPED — no probe scripts declared in PLAN.md files or found under `
 |-------------|-------------|-------------|--------|----------|
 | CMD-06 | 08-02 | buy command with constituent check, dup guard, off-signal, stops | SATISFIED | Full implementation in buy.py; 5/5 tests pass |
 | CMD-07 | 08-03 | sell with exit trigger, P&L, --manual bypass | SATISFIED | Full implementation in sell.py; 3/3 tests pass |
-| CMD-08 | 08-04 | fix with field prompts, no-changes exit, stop recalc, audit | PARTIAL | Core flow implemented and tested; CR-01 (no range validation on new_price/new_shares) is an open bug; sell-side path has no test coverage |
-| TEST-02 | (quality) | Unit test coverage > 90% on all source modules | BLOCKED | 87% total; fix.py at 56% |
+| CMD-08 | 08-04, 08-06 | fix with field prompts, no-changes exit, stop recalc, audit, range guards | SATISFIED | Full implementation including range guards (Plan 08-06); 15/15 tests pass |
+| TEST-02 | 08-07 | Unit test coverage >= 90% on all source modules | SATISFIED | fix.py 90%, buy.py 90%, sell.py 94%; 29 tests passing |
 
 ---
 
@@ -155,38 +133,28 @@ Step 7c: SKIPPED — no probe scripts declared in PLAN.md files or found under `
 
 | File | Line | Pattern | Severity | Impact |
 |------|------|---------|----------|--------|
-| src/bensdorp1/commands/fix.py | ~180, ~191, ~220 | No `> 0` range check after `float()` / `int()` parse | BLOCKER | Zero or negative price/shares written to DB; initial_stop = 0 * 0.93 = 0 silently; corrupts all downstream stop calculations |
-| src/bensdorp1/commands/sell.py | 162 | `_REASON_MAP.get(trigger_row.reason, "stop_trailing")` silent fallback | WARNING | Unknown future trigger reason silently mapped to "stop_trailing"; audit trail corrupted without user warning |
-| src/bensdorp1/commands/fix.py | 267-270 | realized_pnl preserved as NULL when only date/manual_reason changes on sell | WARNING | NULL can propagate from prior DB state on date-only fix of closed position |
-| tests/test_commands/test_fix.py | all | Sell-side fix path (target_kind == "sell") has zero test coverage | BLOCKER | CR-01 and WR-02 both live on the untested sell path; no regression protection |
+| *(none)* | — | All anti-patterns from initial review resolved by Plans 08-06, 08-07, and code review wave 4 | — | — |
 
 ---
 
 ### Human Verification Required
 
-#### 1. fix.py: zero/negative price rejection
-
-**Test:** Run `bensdorp1 fix SYMBOL` against an open position, enter `0` for Price prompt, then enter `y` to confirm.
-**Expected:** Command should print an error "Price must be greater than zero." and exit code 1 without writing to the DB.
-**Why human:** This test requires the interactive `input()` prompts which CliRunner's stdin simulation requires a fix to be in place first. Verifying the current (broken) behavior is needed to confirm the gap before it is fixed.
+None — all previously-required human checks are now covered by automated tests.
 
 ---
 
 ### Gaps Summary
 
-Two gaps block phase completion:
+Both gaps identified in the initial verification were closed by Plans 08-06 and 08-07:
 
-**Gap 1 — CR-01: fix.py missing input validation (BLOCKER)**
+**Gap 1 — CR-01 (RESOLVED by Plan 08-06)**
+Three range guards added to fix.py (buy price, buy shares, sell price). Three new tests cover all three branches. Code review (08-REVIEW.md wave 4) confirms the fix is correct.
 
-`fix.py` parses `new_price` via `float()` and `new_shares` via `int()` in the field-editing loop (buy and sell paths) but applies no `> 0` range check before writing to the database. The equivalent guard exists in `buy.py` (line 98). A user entering `0` or `-50` for price will have that value committed to `positions.entry_close` or `positions.exit_price`, making `initial_stop = 0 * 0.93 = 0` and invalidating all stop-loss logic. This was identified by code review finding CR-01 and confirmed by grep returning no matches for any range check pattern in fix.py. Fix requires three guard additions (~6 lines) immediately after the `float()`/`int()` parse calls.
-
-**Gap 2 — TEST-02: coverage below 90% threshold (BLOCKER)**
-
-Total measured coverage is 87% (08-05-SUMMARY.md, gate report). `fix.py` is at 56% — the sell-side path (fixing a closed position's date, exit_price, manual_reason, realized_pnl recalculation) is completely untested. `buy.py` is at 82% and `sell.py` at 84% due to uncovered error-exit branches. The TEST-02 requirement is >= 90%. The sell-side fix path gap also means CR-01 has no regression test.
-
-Both gaps must be closed before this phase can be marked complete. The two gaps share a root cause: Plan 04 scoped only 3 test scenarios for fix.py (matching Plan 01's skeleton), which left the sell-side path entirely uncovered and the input validation gap undetected by tests.
+**Gap 2 — TEST-02 (RESOLVED by Plan 08-07)**
+21 new tests added across test_fix.py, test_buy.py, and test_sell.py. Coverage reached fix.py 90%, buy.py 90%, sell.py 94%.
 
 ---
 
 _Verified: 2026-05-25T20:30:00Z_
+_Re-verified: 2026-05-25T21:00:00Z (Plans 08-06 and 08-07 closed both gaps)_
 _Verifier: Claude (gsd-verifier)_
