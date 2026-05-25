@@ -61,7 +61,7 @@ def test_audit_log_indexes_exist(db_engine: Engine) -> None:
 
 
 def test_positions_columns(db_engine: Engine) -> None:
-    """positions table has exactly the 12 expected columns."""
+    """positions table has exactly the 14 expected columns (Phase 8 adds closed_reason cols)."""
     insp = inspect(db_engine)
     cols = {c["name"] for c in insp.get_columns("positions")}
     assert {
@@ -77,4 +77,6 @@ def test_positions_columns(db_engine: Engine) -> None:
         "closed_at",
         "exit_price",
         "realized_pnl",
+        "closed_reason",
+        "closed_manual_reason",
     } == cols
