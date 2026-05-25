@@ -50,28 +50,27 @@ def history(
         filters.append(scans.c.scan_date >= since_dt)
 
     # D. Query scans
+    stmt = select(scans).order_by(scans.c.scan_date.desc()).limit(limit)
+    if filters:
+        stmt = stmt.where(*filters)
     with engine.connect() as conn:
-        scan_rows = conn.execute(
-            select(scans)
-            .where(*filters)
-            .order_by(scans.c.scan_date.desc())
-            .limit(limit)
-        ).fetchall()
+        scan_rows = conn.execute(stmt).fetchall()
 
-        if not scan_rows:
-            if not filters:
-                # No filters and no rows → table is empty
-                print_info(
-                    "No scans recorded yet."
-                    " Run `bensdorp1 scan` on a trading day after 16:30 ET.",
-                    console=console,
-                )
-            else:
-                print_info("No scans match the given filters.", console=console)
-            raise typer.Exit()
+    if not scan_rows:
+        if not filters:
+            # No filters and no rows → table is empty
+            print_info(
+                "No scans recorded yet."
+                " Run `bensdorp1 scan` on a trading day after 16:30 ET.",
+                console=console,
+            )
+        else:
+            print_info("No scans match the given filters.", console=console)
+        raise typer.Exit()
 
-        # E. Build rows with per-scan top-3 sub-query (RESEARCH Pattern 4)
-        rows: list[list[str]] = []
+    # E. Build rows with per-scan top-3 sub-query (RESEARCH Pattern 4)
+    rows: list[list[str]] = []
+    with engine.connect() as conn:
         for scan in scan_rows:
             cand_rows = conn.execute(
                 select(scan_candidates.c.symbol)
