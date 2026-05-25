@@ -128,3 +128,10 @@ def portfolio() -> None:
 
     # F. Render table (D-06 exact 10-column layout)
     render_table(columns=_COLUMNS, rows=rows, console=console)
+    # Note: "High $" and "Stop $" reflect values as of the last scan run.
+    # Run `bensdorp1 scan` to update stop levels with today's close.
+    console.print(
+        "Note: High $ and Stop $ reflect the last scan run.",
+        markup=False,
+        highlight=False,
+    )
