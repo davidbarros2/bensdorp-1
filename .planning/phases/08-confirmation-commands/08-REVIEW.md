@@ -1,236 +1,276 @@
 ---
 phase: 08-confirmation-commands
-reviewed: 2026-05-25T00:00:00Z
+reviewed: 2026-05-25T12:00:00Z
 depth: standard
-files_reviewed: 7
+files_reviewed: 5
 files_reviewed_list:
-  - src/bensdorp1/commands/buy.py
-  - src/bensdorp1/commands/sell.py
   - src/bensdorp1/commands/fix.py
-  - src/bensdorp1/db/schema.py
+  - src/bensdorp1/commands/sell.py
+  - tests/test_commands/test_fix.py
   - tests/test_commands/test_buy.py
   - tests/test_commands/test_sell.py
-  - tests/test_commands/test_fix.py
 findings:
   critical: 1
-  warning: 4
-  info: 3
-  total: 8
-status: issues_found
+  warning: 3
+  info: 2
+  total: 6
+status: resolved
+resolved: 2026-05-25T13:00:00Z
+resolution_notes: All findings applied — CR-01 ORM consolidation + text import removed from sell.py; WR-01 test_buy_path_shares_only_change rewritten with real db_engine; WR-02 text() seed replaced with ORM insert; WR-03 was already present; IN-01 done as part of CR-01; IN-02 deferred (low risk, no fix needed)
 ---
 
-# Phase 08: Code Review Report
+# Phase 08: Code Review Report (Gap Closure — Wave 4)
 
-**Reviewed:** 2026-05-25T00:00:00Z
+**Reviewed:** 2026-05-25T12:00:00Z
 **Depth:** standard
-**Files Reviewed:** 7
+**Files Reviewed:** 5
 **Status:** issues_found
 
 ## Summary
 
-The three command modules (buy, sell, fix) implement the confirmation workflow
-described in the phase plan. SQL injection prevention is solid throughout: all
-DB writes use SQLAlchemy ORM `insert`/`update` with bound parameters, and the
-two `text()` calls in sell.py use named-parameter dicts. KeyboardInterrupt
-handling is consistent and correct. The buy/sell happy paths are well-covered by
-integration tests against a real SQLite engine.
+This review covers the gap closure work from plans 08-06 and 08-07: range guards
+in fix.py (CR-01 fix), the explicit typer.Exit(code=1) for unrecognised trigger
+reasons in sell.py (WR-01 fix), unconditional realized_pnl recomputation in the
+sell path of fix.py (WR-02 fix), and 21 new tests spread across test_fix.py,
+test_buy.py, and test_sell.py.
 
-The primary blocker is a missing input validation in `fix.py`: the field-editing
-loop accepts zero and negative values for price and shares with no guard,
-allowing corrupt values to be written directly to the DB. Beyond that, four
-quality/robustness warnings were found, and three informational items.
+**CR-01 fix (fix.py range guards):** Correctly implemented. Both the buy and
+sell paths in fix.py now validate price > 0 (lines 183-185 and 229-231) and the
+buy path validates shares > 0 (lines 199-201). The guards fire before any state
+change and exit code=1 with a user-facing message.
+
+**WR-01 fix (sell.py unrecognised reason):** Correctly implemented. The silent
+`_REASON_MAP.get(reason, "stop_trailing")` fallback has been replaced with an
+explicit `_REASON_MAP.get(reason)` / `if mapped is None` guard at lines 162-169
+that exits code=1 with a clear error message.
+
+**WR-02 fix (fix.py realized_pnl recomputation):** Correctly implemented. Line
+276 now always computes `new_realized_pnl = (new_price - current_entry_close) *
+current_shares` unconditionally in the sell branch, eliminating the conditional
+that previously left the DB value unchanged when only date or manual_reason
+changed.
+
+One new critical issue was found (see CR-01 below): the two-step UPDATE in
+sell.py and the comment explaining it are based on a false premise — the columns
+they claim are not in schema.py DDL are in fact declared there, making the
+raw text() UPDATE redundant and the comment actively misleading for maintainers.
+Three warnings and two informational items round out the findings.
 
 ---
 
 ## Critical Issues
 
-### CR-01: fix.py accepts zero or negative price and shares without validation
+### CR-01: sell.py — two-step UPDATE built on a false premise; comment is
+actively misleading
 
-**File:** `src/bensdorp1/commands/fix.py:179` (buy price), `fix.py:190` (shares), `fix.py:219` (sell price)
+**File:** `src/bensdorp1/commands/sell.py:216-243`
 
-**Issue:** The field-editing loop parses `new_price` and `new_shares` from raw
-user input but never validates that they are greater than zero. A user who
-types `0` or `-50` will pass the parse step (`float()` / `int()` succeed on
-those inputs) and the values are written directly to the database. `buy.py`
-correctly guards with `if price <= 0 or shares <= 0` (line 98); `fix.py` has
-no equivalent gate. This allows `entry_close = 0`, which would make every
-downstream stop-loss calculation (`initial_stop = 0 * 0.93 = 0`) silently
-wrong, and `realized_pnl` arithmetic on zero entry price would produce
-economically meaningless values.
+**Issue:** The comment at lines 217-219 states:
 
-**Fix:** Add explicit range checks immediately after each successful `float()`
-/ `int()` parse, mirroring the guard already in buy.py:
+> "Two-step UPDATE: the core columns are in the Table object; closed_reason and
+> closed_manual_reason are added via ALTER TABLE in run_migrations (not in
+> schema.py DDL), so they must be updated via a parameterized text() statement."
+
+This premise is **wrong**. `closed_reason` and `closed_manual_reason` are
+explicitly declared as `Column("closed_reason", Text, nullable=True)` and
+`Column("closed_manual_reason", Text, nullable=True)` in `schema.py` lines
+57-58. They are full members of the SQLAlchemy `Table` object. The ALTER TABLE
+statements in `run_migrations` are a migration guard for databases that
+pre-existed before those columns were added — they are idempotent additions,
+not the sole source of the column definition.
+
+Evidence that the standard ORM path works: `fix.py`'s sell-path DB write
+(lines 407-416) successfully uses `update(positions).values(closed_manual_reason=
+new_manual_reason)` with no `text()` fallback, and the integration tests confirm
+it writes correctly.
+
+The false comment creates a correctness risk: any future maintainer who reads
+the sell.py comment will believe these columns cannot be referenced via the ORM
+and will replicate the raw-SQL pattern, making the codebase inconsistent and
+harder to refactor. The `text()` UPDATE also bypasses SQLAlchemy's parameter
+type coercion and is more verbose than needed.
+
+**Fix:** Consolidate into a single ORM UPDATE:
 
 ```python
-# After parsing new_price (buy path, ~line 180)
-if new_price <= 0:
-    print_error("Price must be greater than zero.", console=console)
-    raise typer.Exit(code=1) from None
-
-# After parsing new_shares (buy path, ~line 191)
-if new_shares <= 0:
-    print_error("Shares must be greater than zero.", console=console)
-    raise typer.Exit(code=1) from None
-
-# After parsing new_price (sell path, ~line 220)
-if new_price <= 0:
-    print_error("Price must be greater than zero.", console=console)
-    raise typer.Exit(code=1) from None
+# G. State-changing write
+with engine.connect() as conn:
+    conn.execute(
+        update(positions)
+        .where(positions.c.id == position_id)
+        .values(
+            closed_at=sell_dt,
+            exit_price=price,
+            realized_pnl=realized_pnl,
+            closed_reason=closed_reason,
+            closed_manual_reason=closed_manual_reason,
+        )
+    )
+    conn.commit()
 ```
+
+Remove the `text` import from sell.py if it becomes unused after this change.
 
 ---
 
 ## Warnings
 
-### WR-01: sell.py — silent fallback in `_REASON_MAP` corrupts `closed_reason` for unknown trigger strings
+### WR-01: test_fix.py — test_buy_path_shares_only_change does not verify the
+DB write
 
-**File:** `src/bensdorp1/commands/sell.py:162`
+**File:** `tests/test_commands/test_fix.py:457-470`
 
-**Issue:** `_REASON_MAP.get(trigger_row.reason, "stop_trailing")` silently maps
-any trigger reason string that is not in the map to `"stop_trailing"`. The map
-currently covers the two known values (`"Trailing stop"` and `"Initial stop"`).
-If a future scan phase introduces a third exit reason (e.g., `"Index exit"` or
-`"Regime change"`), the stored `closed_reason` will be `"stop_trailing"` with
-no warning. This corrupts the audit trail silently.
+**Issue:** `test_buy_path_shares_only_change` uses a mock engine (via
+`_make_buy_mocks`) and asserts `"Transaction corrected"` in `result.output`.
+It does not assert that `mock_conn.execute` was called with an UPDATE containing
+`shares=25`, nor does it verify that `create_backup` or `log_event` was called.
+For a mock-only test this is weak — the test would pass even if the write block
+were accidentally skipped, as long as the print_success path was reached.
 
-**Fix:** Remove the default fallback and raise an explicit error on unknown
-reason strings:
+The existing `test_price_change_updates_stop` is a proper integration test
+against a real SQLite engine. `test_buy_path_shares_only_change` should follow
+the same pattern to catch regressions in the write path for shares-only changes.
+
+**Fix:** Rewrite using `db_engine` fixture instead of a mock engine, seed a
+position, invoke fix with only a shares change, and assert the updated `shares`
+value in the DB row:
 
 ```python
-mapped = _REASON_MAP.get(trigger_row.reason)
-if mapped is None:
-    print_error(
-        f"Unrecognised exit trigger reason: {trigger_row.reason!r}.",
-        body=["Use --manual to record this sell with a custom reason."],
-        console=console,
-    )
-    raise typer.Exit(code=1)
-closed_reason = mapped
+def test_buy_path_shares_only_change(db_engine: Engine) -> None:
+    with db_engine.connect() as conn:
+        result = conn.execute(
+            insert(positions).values(
+                symbol="NVDA",
+                entry_date=datetime(2026, 5, 1, tzinfo=UTC),
+                entry_close=432.50,
+                shares=23,
+                initial_stop=402.225,
+                highest_close=440.00,
+                trailing_stop=330.00,
+                scan_id=None,
+                closed_at=None,
+                exit_price=None,
+                realized_pnl=None,
+            )
+        )
+        conn.commit()
+        position_id = int(result.inserted_primary_key[0])
+
+    with (
+        patch("bensdorp1.commands.fix.get_engine", return_value=db_engine),
+        patch("bensdorp1.commands.fix.create_backup"),
+    ):
+        result = runner.invoke(app, ["fix", "NVDA"], input="y\n\n\n25\ny\n")
+
+    assert result.exit_code == 0
+    with db_engine.connect() as conn:
+        row = conn.execute(
+            select(positions).where(positions.c.id == position_id)
+        ).fetchone()
+    assert row is not None
+    assert row.shares == 25
+    assert row.initial_stop == pytest.approx(402.225)  # unchanged
 ```
 
-### WR-02: fix.py — sell-side `realized_pnl` silently overwrites with NULL when only date or manual reason changes
+### WR-02: test_fix.py — misleading comment in test_fix_sell_path claims
+closed_reason columns are not in schema DDL
 
-**File:** `src/bensdorp1/commands/fix.py:269-270`
+**File:** `tests/test_commands/test_fix.py:162-168`
 
-**Issue:** When fixing a closed position and the user changes only the date or
-the manual reason (not the exit price), the code takes the `else` branch:
-`new_realized_pnl = current_realized_pnl`. This is then passed as
-`realized_pnl=new_realized_pnl` in the UPDATE (line 407). If a prior database
-migration or a manually-inserted row left `realized_pnl` as `NULL`, the UPDATE
-will write `NULL` back and the impact-display block (lines 350-365) will show
-`"N/A -> N/A"` with no error. More importantly, this means a date-only fix on a
-position whose `realized_pnl` was legitimately computed will preserve NULL
-rather than re-computing. While the current `sell.py` always sets
-`realized_pnl`, the schema declares it nullable and the fix command should
-re-compute rather than blindly preserve the stored value.
+**Issue:** The test uses `text("UPDATE positions SET closed_reason='stop_trailing',
+closed_manual_reason=NULL WHERE id=:id")` to seed the `closed_reason` column,
+with an implied rationale matching sell.py's false comment. As established in
+CR-01 above, these columns ARE in schema.py. The raw `text()` is unnecessary and
+the inconsistency (fix.py uses the ORM for these columns; the test uses raw SQL
+to seed them) is confusing.
 
-**Fix:** Always recompute `realized_pnl` from `new_price` and
-`current_entry_close` in the sell path, regardless of what changed:
+**Fix:** Replace the `text()` seeding step with an ORM insert that includes
+`closed_reason` directly in the `insert(positions).values(...)` call at line
+146. Since `schema.py` declares the column, the insert statement accepts it:
 
 ```python
-else:
-    new_initial_stop = 0.0  # not used for sell
-    new_realized_pnl = (new_price - current_entry_close) * current_shares
+conn.execute(
+    insert(positions).values(
+        symbol="AAPL",
+        ...
+        closed_reason="stop_trailing",
+        closed_manual_reason=None,
+    )
+)
 ```
 
-This is idempotent when the price is unchanged and eliminates the NULL
-propagation risk.
+### WR-03: test_sell.py — `test_sell_date_before_entry` only checks the date
+string is present; does not verify exit_code=1
 
-### WR-03: test_fix.py — sell-side fix path has zero test coverage
+**File:** `tests/test_commands/test_sell.py:286-302`
 
-**File:** `tests/test_commands/test_fix.py`
+**Issue:** `test_sell_date_before_entry` asserts `result.exit_code == 1` is
+missing. The test only asserts `assert "2026-03-01" in result.output`. If
+sell.py's date-validation branch were to silently continue instead of raising
+`typer.Exit(code=1)`, the test would still pass. The exit code is the primary
+contract being verified.
 
-**Issue:** The test file contains three tests: `test_no_transaction`,
-`test_no_changes`, and `test_price_change_updates_stop`. All three exercise the
-buy path only (`target_kind == "buy"`). The sell path (fixing a closed
-position) — including the `closed_manual_reason` update, `realized_pnl`
-recalculation, diff rendering, and the ORM UPDATE — is completely untested.
-The bug in CR-01 (zero-price validation) and the issue in WR-02 (NULL
-`realized_pnl`) are both on the sell path and have no test that would catch
-them.
-
-**Fix:** Add at minimum one integration test seeding a closed position and
-invoking `fix SYMBOL` with a price correction, then asserting
-`exit_price`, `realized_pnl`, and `closed_manual_reason` in the DB and an
-`audit_log` row with `"transaction_corrected"` event type.
-
-### WR-04: buy.py — price/shares validation executes after two DB round-trips
-
-**File:** `src/bensdorp1/commands/buy.py:97-104`
-
-**Issue:** The check `if price <= 0 or shares <= 0` at line 98 is labelled
-"step C.3" in the comments, but it runs after two `engine.connect()` blocks
-(steps C.1 and C.2, lines 68-95). A caller passing `price=0, shares=0` will
-trigger two database queries before receiving the validation error. While not
-a correctness bug (the DB write is still prevented), it is an inconsistency
-with the validation-first convention implied by the spec's D-04 ordering, and
-means the error message comes after the "not a valid S&P 500 constituent" check
-rather than before it, which can confuse the user if both conditions hold.
-
-**Fix:** Move the `price <= 0 or shares <= 0` check to the top of the function,
-before the first `engine.connect()` call:
+**Fix:**
 
 ```python
-# Validate price and shares first (fast, no DB required)
-if price <= 0 or shares <= 0:
-    print_error(
-        "Price and shares must be greater than zero.",
-        data={"Price": format_price(price), "Shares": str(shares)},
-        console=console,
-    )
-    raise typer.Exit(code=1)
+assert result.exit_code == 1
+assert "2026-03-01" in result.output
 ```
 
 ---
 
 ## Info
 
-### IN-01: `SEPARATOR` constant duplicated across three modules
+### IN-01: sell.py — `text` import is only needed for the unnecessary two-step
+UPDATE
 
-**File:** `src/bensdorp1/commands/buy.py:31`, `sell.py:38`, `fix.py:33`
+**File:** `src/bensdorp1/commands/sell.py:10`
 
-**Issue:** All three command modules independently define
-`SEPARATOR: str = "=" * 64`. If the separator length ever needs to change, it
-must be updated in three places.
+**Issue:** `from sqlalchemy import select, text, update` — the `text` import
+exists solely to support the raw-SQL UPDATE in section G. If that UPDATE is
+consolidated into the ORM form (see CR-01 fix), the `text` import becomes unused
+and should be removed to keep imports clean.
 
-**Fix:** Move `SEPARATOR` to a shared location such as
-`src/bensdorp1/ui/styles.py` (which already owns styling constants) or a new
-`src/bensdorp1/commands/_shared.py`, and import it in each command module.
+**Fix:** After applying the CR-01 fix, remove `text` from the import list:
 
-### IN-02: test_sell.py — missing test for "no open position" error path
-
-**File:** `tests/test_commands/test_sell.py`
-
-**Issue:** The test file covers `test_no_exit_trigger`, the happy path, and the
-manual sell. It does not cover the case where `pos_row is None` (line 102 of
-sell.py) — i.e., the user calls `sell SYMBOL PRICE` for a symbol with no open
-position. This error branch has no test.
-
-**Fix:** Add a mock-based test analogous to `test_no_exit_trigger` that sets
-`fetchone.return_value = None` for the initial position lookup and asserts
-`exit_code == 1` and `"No open position"` in output.
-
-### IN-03: fix.py — `--date` is a dead parameter
-
-**File:** `src/bensdorp1/commands/fix.py:39-44`
-
-**Issue:** The `date` parameter is declared with `typer.Option` and appears in
-CLI help text, but is immediately assigned to `_unused` (line 44) and never
-consulted. A user who passes `--date 2026-05-01` will receive no error and no
-indication the flag was ignored. If this is truly reserved, it should either be
-omitted from the CLI surface entirely or documented with a `hidden=True` in the
-`typer.Option()` call so it does not pollute `--help` output.
-
-**Fix:**
 ```python
-date: str | None = typer.Option(
-    None, "--date", help="(Reserved; unused in Phase 8.)", hidden=True
-),
+from sqlalchemy import select, update
 ```
-Or remove the parameter until it has an implementation.
+
+### IN-02: fix.py — `new_initial_stop = 0.0` sentinel in the sell path is
+fragile
+
+**File:** `src/bensdorp1/commands/fix.py:275`
+
+**Issue:** In the sell branch of the recalculation block, `new_initial_stop =
+0.0` is assigned purely to satisfy the type checker (the variable must be
+defined before the shared `conn.execute(update(...))` block). The value is never
+written for the sell path (the sell-side UPDATE at lines 407-416 does not
+include `initial_stop`). However, if a future edit accidentally adds
+`initial_stop=new_initial_stop` to the sell UPDATE, the sentinel `0.0` would
+corrupt every position record it touches.
+
+**Fix:** Remove the sentinel and instead use the existing branching structure to
+make `new_initial_stop` defined only in the buy branch. Since the sell-side
+write block does not reference `new_initial_stop`, mypy will only complain if
+the sell write accidentally uses it — making the type error into a compile-time
+catch rather than a silent runtime corruption:
+
+```python
+if target_kind == "buy":
+    new_initial_stop: float = new_price * 0.93 if new_price != current_entry_close else current_initial_stop
+    new_realized_pnl: float | None = None
+else:
+    new_realized_pnl = (new_price - current_entry_close) * current_shares
+    # new_initial_stop intentionally not defined in sell path
+```
+
+Then adjust the sell-side write block to not reference `new_initial_stop` at
+all (it already does not — this just removes the false safety net that hides
+the risk).
 
 ---
 
-_Reviewed: 2026-05-25T00:00:00Z_
+_Reviewed: 2026-05-25T12:00:00Z_
 _Reviewer: Claude (gsd-code-reviewer)_
 _Depth: standard_

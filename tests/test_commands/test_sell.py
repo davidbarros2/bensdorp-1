@@ -300,3 +300,4 @@ def test_sell_date_before_entry(tmp_path: Path) -> None:
 
     assert result.exit_code == 1
     assert "2026-03-01" in result.output
+

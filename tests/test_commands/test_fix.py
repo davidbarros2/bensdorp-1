@@ -154,18 +154,13 @@ def test_fix_sell_path(db_engine: Engine) -> None:
                 closed_at=datetime(2026, 5, 20, tzinfo=UTC),
                 exit_price=178.20,
                 realized_pnl=(178.20 - 182.50) * 50,
+                closed_reason="stop_trailing",
+                closed_manual_reason=None,
             )
         )
         pos_pk = pos_result.inserted_primary_key
         assert pos_pk is not None
         position_id: int = pos_pk[0]
-        conn.execute(
-            text(
-                "UPDATE positions SET closed_reason='stop_trailing',"
-                " closed_manual_reason=NULL WHERE id=:id"
-            ),
-            {"id": position_id},
-        )
         conn.commit()
 
     with (
@@ -298,7 +293,7 @@ def test_sell_path_price_zero_rejected(tmp_path: Path) -> None:
     assert "Price must be greater than zero" in result.output
 
 
-def _make_buy_mocks(tmp_path: Path) -> tuple[MagicMock, MagicMock]:
+def _make_buy_mocks() -> tuple[MagicMock, MagicMock]:
     """Return (mock_engine, mock_conn) with a standard open-position row."""
     mock_engine = MagicMock()
     mock_conn = MagicMock()
@@ -335,7 +330,7 @@ def _make_sell_mocks() -> tuple[MagicMock, MagicMock]:
 
 def test_no_confirm_aborts(tmp_path: Path) -> None:
     """User says n to 'Is this the transaction to fix?' → exits 0 with no write."""
-    mock_engine, _ = _make_buy_mocks(tmp_path)
+    mock_engine, _ = _make_buy_mocks()
     with (
         patch("bensdorp1.commands.fix.DATA_DIR", tmp_path),
         patch("bensdorp1.commands.fix.get_engine", return_value=mock_engine),
@@ -351,7 +346,7 @@ def test_no_confirm_aborts(tmp_path: Path) -> None:
 
 def test_buy_path_date_invalid(tmp_path: Path) -> None:
     """buy-path fix exits code 1 for an unparseable date string."""
-    mock_engine, _ = _make_buy_mocks(tmp_path)
+    mock_engine, _ = _make_buy_mocks()
     with (
         patch("bensdorp1.commands.fix.DATA_DIR", tmp_path),
         patch("bensdorp1.commands.fix.get_engine", return_value=mock_engine),
@@ -366,7 +361,7 @@ def test_buy_path_date_invalid(tmp_path: Path) -> None:
 
 def test_buy_path_price_nonnumeric(tmp_path: Path) -> None:
     """buy-path fix exits code 1 when price input is non-numeric."""
-    mock_engine, _ = _make_buy_mocks(tmp_path)
+    mock_engine, _ = _make_buy_mocks()
     with (
         patch("bensdorp1.commands.fix.DATA_DIR", tmp_path),
         patch("bensdorp1.commands.fix.get_engine", return_value=mock_engine),
@@ -381,7 +376,7 @@ def test_buy_path_price_nonnumeric(tmp_path: Path) -> None:
 
 def test_buy_path_shares_nonnumeric(tmp_path: Path) -> None:
     """buy-path fix exits code 1 when shares input is non-integer."""
-    mock_engine, _ = _make_buy_mocks(tmp_path)
+    mock_engine, _ = _make_buy_mocks()
     with (
         patch("bensdorp1.commands.fix.DATA_DIR", tmp_path),
         patch("bensdorp1.commands.fix.get_engine", return_value=mock_engine),
@@ -454,17 +449,43 @@ def test_sell_path_manual_reason_display(tmp_path: Path) -> None:
     assert "Manual reason" in result.output
 
 
-def test_buy_path_shares_only_change(tmp_path: Path) -> None:
-    """Changing only shares covers the price-unchanged else branch and diff row."""
-    mock_engine, _ = _make_buy_mocks(tmp_path)
+def test_buy_path_shares_only_change(db_engine: Engine) -> None:
+    """Changing only shares writes the updated value to the DB."""
+    with db_engine.connect() as conn:
+        pos_result = conn.execute(
+            insert(positions).values(
+                symbol="NVDA",
+                entry_date=datetime(2026, 5, 1, tzinfo=UTC),
+                entry_close=432.50,
+                shares=23,
+                initial_stop=402.225,
+                highest_close=440.00,
+                trailing_stop=330.00,
+                scan_id=None,
+                closed_at=None,
+                exit_price=None,
+                realized_pnl=None,
+            )
+        )
+        pos_pk = pos_result.inserted_primary_key
+        assert pos_pk is not None
+        position_id: int = pos_pk[0]
+        conn.commit()
+
     with (
-        patch("bensdorp1.commands.fix.DATA_DIR", tmp_path),
-        patch("bensdorp1.commands.fix.get_engine", return_value=mock_engine),
-        patch("bensdorp1.commands.fix.run_migrations"),
+        patch("bensdorp1.commands.fix.get_engine", return_value=db_engine),
         patch("bensdorp1.commands.fix.create_backup"),
-        patch("bensdorp1.commands.fix.log_event"),
     ):
         # y = confirm; \n = keep Date; \n = keep Price; 25 = new Shares; y = confirm
         result = runner.invoke(app, ["fix", "NVDA"], input="y\n\n\n25\ny\n")
+
     assert result.exit_code == 0
     assert "Transaction corrected" in result.output
+
+    with db_engine.connect() as conn:
+        row = conn.execute(
+            select(positions).where(positions.c.id == position_id)
+        ).fetchone()
+    assert row is not None
+    assert row.shares == 25
+    assert row.initial_stop == pytest.approx(402.225)
