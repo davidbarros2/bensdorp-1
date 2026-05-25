@@ -113,13 +113,11 @@ def audit(
     if type_ is not None:
         filters.append(audit_log.c.event_type == str(type_))
 
+    stmt = select(audit_log).order_by(audit_log.c.occurred_at.desc()).limit(limit)
+    if filters:
+        stmt = stmt.where(*filters)
     with engine.connect() as conn:
-        result_rows = conn.execute(
-            select(audit_log)
-            .where(*filters)
-            .order_by(audit_log.c.occurred_at.desc())
-            .limit(limit)
-        ).fetchall()
+        result_rows = conn.execute(stmt).fetchall()
 
     if not result_rows:
         print_info("No audit events match the given filters.", console=console)
