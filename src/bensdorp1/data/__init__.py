@@ -1,8 +1,4 @@
-"""Public surface of the bensdorp1.data subpackage.
-
-DATA-06 (split detection and automatic position adjustment) is OUT OF SCOPE for Phase 3.
-Split detection is owned by Phase 11 (Catch-Up Logic). See ROADMAP.md §Phase 11.
-"""
+"""Public surface of the bensdorp1.data subpackage."""
 
 from bensdorp1.data.calendar import get_trading_days, is_trading_day, n_trading_days_ago
 from bensdorp1.data.constituents import get_constituents, refresh_constituents
