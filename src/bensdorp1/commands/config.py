@@ -1,6 +1,7 @@
 """Show current system configuration (CMD-12)."""
 
-from importlib.metadata import PackageNotFoundError, version as pkg_version
+from importlib.metadata import PackageNotFoundError
+from importlib.metadata import version as pkg_version
 
 import typer
 from rich.console import Console
