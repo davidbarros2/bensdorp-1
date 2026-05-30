@@ -217,6 +217,7 @@ def test_catchup_stop_updates(db_engine: Engine) -> None:
                 highest_close=100.0,
                 trailing_stop=75.0,
                 closed_at=None,
+                delisted=0,
             )
         )
         conn.commit()
@@ -312,6 +313,7 @@ def test_stop_freeze_after_trigger(db_engine: Engine) -> None:
                 highest_close=100.0,
                 trailing_stop=75.0,
                 closed_at=None,
+                delisted=0,
             )
         )
         conn.commit()
@@ -426,6 +428,7 @@ def test_exit_trigger_on_missed_day(db_engine: Engine) -> None:
                 highest_close=100.0,
                 trailing_stop=100.0,
                 closed_at=None,
+                delisted=0,
             )
         )
         conn.commit()

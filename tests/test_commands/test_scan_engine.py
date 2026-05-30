@@ -164,6 +164,7 @@ def test_query_open_positions_returns_open_only(db_engine: Engine) -> None:
                 highest_close=100.0,
                 trailing_stop=75.0,
                 closed_at=None,
+                delisted=0,
             )
         )
         conn.execute(
@@ -176,6 +177,7 @@ def test_query_open_positions_returns_open_only(db_engine: Engine) -> None:
                 highest_close=200.0,
                 trailing_stop=150.0,
                 closed_at=closed_dt,  # closed — must be excluded
+                delisted=0,
             )
         )
         conn.commit()
@@ -265,6 +267,7 @@ def test_query_pending_triggers_excludes_new(db_engine: Engine) -> None:
                 highest_close=100.0,
                 trailing_stop=75.0,
                 closed_at=None,
+                delisted=0,
             )
         )
         r2 = conn.execute(
@@ -277,6 +280,7 @@ def test_query_pending_triggers_excludes_new(db_engine: Engine) -> None:
                 highest_close=200.0,
                 trailing_stop=150.0,
                 closed_at=None,
+                delisted=0,
             )
         )
         conn.commit()
@@ -869,6 +873,7 @@ def test_detect_exit_triggers_already_existing(db_engine: Engine) -> None:
                 highest_close=100.0,
                 trailing_stop=100.0,
                 closed_at=None,
+                delisted=0,
             )
         )
         conn.commit()
