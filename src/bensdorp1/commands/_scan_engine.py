@@ -90,6 +90,9 @@ class _OpenPosition(NamedTuple):
     initial_stop: float
     highest_close: float
     trailing_stop: float
+    entry_close: float
+    shares: int
+    delisted: int
 
 
 class _TriggerRow(NamedTuple):
@@ -436,6 +439,9 @@ def _query_open_positions(engine: Engine) -> list[_OpenPosition]:
                 positions.c.initial_stop,
                 positions.c.highest_close,
                 positions.c.trailing_stop,
+                positions.c.entry_close,
+                positions.c.shares,
+                positions.c.delisted,
             ).where(positions.c.closed_at == None)  # noqa: E711
         ).fetchall()
     for row in rows:
@@ -447,6 +453,9 @@ def _query_open_positions(engine: Engine) -> list[_OpenPosition]:
                 initial_stop=row.initial_stop,
                 highest_close=row.highest_close,
                 trailing_stop=row.trailing_stop,
+                entry_close=row.entry_close,
+                shares=row.shares,
+                delisted=row.delisted,
             )
         )
     return open_pos
@@ -533,6 +542,9 @@ def _update_position_stops(
                     initial_stop=pos.initial_stop,
                     highest_close=new_hc,
                     trailing_stop=new_ts,
+                    entry_close=pos.entry_close,
+                    shares=pos.shares,
+                    delisted=pos.delisted,
                 )
 
 

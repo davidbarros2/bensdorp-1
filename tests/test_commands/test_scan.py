@@ -264,6 +264,9 @@ def test_catchup_stop_updates(db_engine: Engine) -> None:
         initial_stop=93.0,
         highest_close=100.0,
         trailing_stop=75.0,
+        entry_close=100.0,
+        shares=10,
+        delisted=0,
     )
     open_positions = [pos]
     triggered_ids: dict[int, tuple[date, float, float]] = {}
@@ -348,6 +351,9 @@ def test_stop_freeze_after_trigger(db_engine: Engine) -> None:
         initial_stop=100.0,
         highest_close=100.0,
         trailing_stop=75.0,
+        entry_close=100.0,
+        shares=5,
+        delisted=0,
     )
     open_positions = [pos]
 
@@ -452,6 +458,9 @@ def test_exit_trigger_on_missed_day(db_engine: Engine) -> None:
         initial_stop=100.0,
         highest_close=100.0,
         trailing_stop=100.0,
+        entry_close=110.0,
+        shares=8,
+        delisted=0,
     )
     open_positions = [pos]
     triggered_ids: dict[int, tuple[date, float, float]] = {}
