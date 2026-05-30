@@ -89,6 +89,21 @@ def run_migrations(engine: Engine) -> None:
                 pass  # column already exists — idempotent
 
 
+def reset_engine() -> None:
+    """Dispose and clear the cached engine singleton so the next call to
+    ``get_engine`` opens a fresh connection pool.
+
+    Use after any operation that replaces the underlying database file (e.g.
+    ``restore``) so subsequent commands do not operate on stale connection
+    state from the old file.
+    """
+    global _engine
+    with _engine_lock:
+        if _engine is not None:
+            _engine.dispose()
+        _engine = None
+
+
 def _reset_engine_for_testing(replacement: Engine | None = None) -> None:
     """Test helper: dispose and replace the cached engine singleton.
 

@@ -14,7 +14,14 @@ from sqlalchemy.engine import URL, create_engine
 
 from bensdorp1._app import app
 from bensdorp1.config import DATA_DIR
-from bensdorp1.db import AuditEventType, get_engine, log_event, run_migrations
+from bensdorp1.db import (
+    AuditEventType,
+    create_backup,
+    get_engine,
+    log_event,
+    reset_engine,
+    run_migrations,
+)
 from bensdorp1.ui import (
     confirm_prompt,
     format_timezone_pair,
@@ -133,11 +140,16 @@ def restore(
         raise typer.Exit()
 
     # 7. Pre-restore backup
+    if not db_path.exists():
+        print_error(
+            "No active database found. Run `bensdorp1 init` first.",
+            console=console,
+        )
+        raise typer.Exit(code=1)
     backups_dir = DATA_DIR / "backups"
-    backups_dir.mkdir(parents=True, exist_ok=True)
-    ts = datetime.now(UTC).strftime("%Y%m%dT%H%M%S_%fZ")
-    pre_restore_path = backups_dir / f"bensdorp1-pre-restore-{ts}.db"
-    shutil.copy2(db_path, pre_restore_path)
+    # Uses sqlite3.Connection.backup() for a consistent snapshot even with
+    # an active WAL — shutil.copy2 on a live DB can produce a corrupt copy.
+    pre_restore_path = create_backup(engine, backups_dir)
 
     # 8. File copy + error recovery
     try:
@@ -154,11 +166,16 @@ def restore(
         raise typer.Exit(code=1) from exc
 
     # 9. Log RESTORE_PERFORMED to the restored DB
+    # Dispose the pre-restore engine (its pool may hold handles to the old
+    # file) and get a fresh engine so the audit event is written to the
+    # newly restored database — not stale connection state.
+    reset_engine()
+    fresh_engine = get_engine(db_path)
     payload: dict[str, Any] = {
         "restored_from": str(resolved),
         "pre_restore_backup": str(pre_restore_path),
     }
-    log_event(engine, AuditEventType.RESTORE_PERFORMED, payload=payload)
+    log_event(fresh_engine, AuditEventType.RESTORE_PERFORMED, payload=payload)
 
     # 10. Success message
     print_success(
