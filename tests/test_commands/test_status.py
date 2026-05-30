@@ -2,7 +2,7 @@
 
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 from sqlalchemy import insert
 from sqlalchemy.engine import Engine
@@ -95,44 +95,26 @@ def test_status_stale_constituents(db_engine: Engine, tmp_path: Path) -> None:
     assert "[STALE]" in result.output
 
 
-def test_status_integrity_failed(tmp_path: Path) -> None:
-    """status shows FAILED when PRAGMA integrity_check returns multiple rows."""
-    mock_engine = MagicMock()
-    mock_conn = mock_engine.connect.return_value.__enter__.return_value
+def test_status_integrity_failed(db_engine: Engine, tmp_path: Path) -> None:
+    """status shows FAILED when PRAGMA integrity_check returns multiple rows.
 
-    # Make all execute() calls return a mock that handles different result methods.
-    # Different queries call fetchone(), scalar(), and fetchall().
-    # We configure fetchall() to return a multi-row integrity failure result.
-    # scalar() returns None for the last scan date (no scans) and 0 for counts.
-    # fetchone() returns (0, None) for the constituents count+max query (empty cache).
-    scalar_call_count = 0
-
-    def make_execute_result(*_args: object, **_kwargs: object) -> MagicMock:
-        result_mock = MagicMock()
-        result_mock.fetchone.return_value = (0, None)
-        # Rotate scalar return values: first call is last scan date (None = no scans),
-        # subsequent calls are counts (0).
-        nonlocal scalar_call_count
-
-        def scalar_side_effect() -> object:
-            nonlocal scalar_call_count
-            scalar_call_count += 1
-            if scalar_call_count == 1:
-                return None  # price_daily count (from constituents section)
-            if scalar_call_count == 2:
-                return None  # last scan date (no scans yet)
-            return 0  # open positions count, pending exits count
-
-        result_mock.scalar.side_effect = scalar_side_effect
-        result_mock.fetchall.return_value = [("error row 1",), ("error row 2",)]
-        return result_mock
-
-    mock_conn.execute.side_effect = make_execute_result
+    Uses a real in-memory engine for all sections and patches only
+    _database_section to return a failed integrity result, avoiding the
+    fragile scalar call-order dependency of a fully hand-rolled mock.
+    """
+    failed_db_section = {
+        "File size": "1.0 KB",
+        "Integrity check": "FAILED",
+    }
 
     with (
         patch("bensdorp1.commands.status.DATA_DIR", tmp_path),
-        patch("bensdorp1.commands.status.get_engine", return_value=mock_engine),
+        patch("bensdorp1.commands.status.get_engine", return_value=db_engine),
         patch("bensdorp1.commands.status.run_migrations"),
+        patch(
+            "bensdorp1.commands.status._database_section",
+            return_value=failed_db_section,
+        ),
     ):
         result = runner.invoke(app, ["status"])
 
