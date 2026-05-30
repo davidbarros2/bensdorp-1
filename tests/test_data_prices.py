@@ -64,19 +64,19 @@ def _make_single_df(
 # ---------------------------------------------------------------------------
 
 
-def test_to_yfinance_period_to_hyphen() -> None:
-    """DATA-08: _to_yfinance converts period form to hyphen form."""
-    assert prices_module._to_yfinance("BRK.B") == "BRK-B"
+def testto_yfinance_period_to_hyphen() -> None:
+    """DATA-08: to_yfinance converts period form to hyphen form."""
+    assert prices_module.to_yfinance("BRK.B") == "BRK-B"
 
 
-def test_to_yfinance_gspc_is_no_op() -> None:
-    """D-04 + DATA-08: ^GSPC is unchanged by _to_yfinance (no dot to replace)."""
-    assert prices_module._to_yfinance("^GSPC") == "^GSPC"
+def testto_yfinance_gspc_is_no_op() -> None:
+    """D-04 + DATA-08: ^GSPC is unchanged by to_yfinance (no dot to replace)."""
+    assert prices_module.to_yfinance("^GSPC") == "^GSPC"
 
 
-def test_to_yfinance_plain_ticker_unchanged() -> None:
-    """DATA-08: plain tickers without dots are unchanged by _to_yfinance."""
-    assert prices_module._to_yfinance("AAPL") == "AAPL"
+def testto_yfinance_plain_ticker_unchanged() -> None:
+    """DATA-08: plain tickers without dots are unchanged by to_yfinance."""
+    assert prices_module.to_yfinance("AAPL") == "AAPL"
 
 
 def test_to_db_hyphen_to_period() -> None:

@@ -750,7 +750,9 @@ def _detect_delisted_positions(
             payload={"position_id": pos.id},
         )
 
-        events.append((pos.symbol, render_removed_from_sp500(pos.symbol, removal_date=None)))
+        events.append(
+            (pos.symbol, render_removed_from_sp500(pos.symbol, removal_date=None))
+        )
 
     return events
 

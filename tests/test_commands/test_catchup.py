@@ -347,10 +347,12 @@ def test_delisted_template4(db_engine: Engine) -> None:
     events = _detect_delisted_positions(db_engine, open_pos, constituents)
 
     assert len(events) == 1
-    assert "Removed from S&P 500" in events[0]
-    assert "SIVB" in events[0]
+    sym, ev = events[0]  # _detect_delisted_positions returns (symbol, event_str) tuples
+    assert sym == "SIVB"
+    assert "Removed from S&P 500" in ev
+    assert "SIVB" in ev
     # No date clause (removal_date=None per Open Question 2 resolution)
-    assert " on 20" not in events[0]  # no date like "on 2026-..."
+    assert " on 20" not in ev  # no date like "on 2026-..."
 
 
 # ---------------------------------------------------------------------------
