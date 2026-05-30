@@ -1170,7 +1170,7 @@ def _run_screening(
     # Cast to float first so spx_close, spx_sma_200, and the value passed
     # to regime_filter all use the same typed series (WR-02: avoids rounding
     # differences between integer-stored closes and float-casted closes).
-    spx_closes: pd.Series[float] = spx_df["close"].astype(float)
+    spx_closes: pd.Series[float] = spx_df["close"].astype(float)  # pyright: ignore[reportInvalidTypeArguments, reportAssignmentType]
     spx_close: float = float(spx_closes.iloc[-1])
     spx_sma_200: float = float(spx_closes.tail(200).mean())
 

@@ -22,7 +22,7 @@ Every trading day it shows exactly which open positions triggered a stop and whi
 | 8 | `buy`, `sell`, `fix` commands | Planned |
 | 9 | `portfolio`, `detail`, `last`, `history`, `cash`, `config`, `audit` | Planned |
 | 10 | `status`, `refresh`, `restore` | Planned |
-| 11 | Catch-up logic (absences, splits, delistings) | Planned |
+| 11 | Catch-up logic (absences, splits, delistings) | Complete |
 | 12 | `validate` command | Planned |
 | 13 | Edge cases and hardening | Planned |
 | 14 | Documentation and finalization | Planned |

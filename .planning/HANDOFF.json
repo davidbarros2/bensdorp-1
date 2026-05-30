@@ -1,64 +1,40 @@
 {
   "version": "1.0",
-  "timestamp": "2026-05-25T22:45:00Z",
-  "phase": "09",
-  "phase_name": "consultation-commands",
-  "phase_dir": ".planning/phases/09-consultation-commands",
-  "plan": 9,
-  "task": 9,
-  "total_tasks": 9,
+  "timestamp": "2026-05-30T19:59:59Z",
+  "phase": "11",
+  "phase_name": "catch-up-logic",
+  "phase_dir": ".planning/phases/11-catch-up-logic",
+  "plan": 3,
+  "task": 3,
+  "total_tasks": 3,
   "status": "paused",
   "completed_tasks": [
-    {"id": 1, "name": "last command", "status": "done", "commit": "f668c07"},
-    {"id": 2, "name": "config command", "status": "done", "commit": "f668c07"},
-    {"id": 3, "name": "history command", "status": "done", "commit": "f668c07"},
-    {"id": 4, "name": "audit command", "status": "done", "commit": "f668c07"},
-    {"id": 5, "name": "cash command", "status": "done", "commit": "f668c07"},
-    {"id": 6, "name": "portfolio command", "status": "done", "commit": "f668c07"},
-    {"id": 7, "name": "detail command", "status": "done", "commit": "f668c07"},
-    {"id": 8, "name": "code review + fixes", "status": "done", "commit": "d1611af"},
-    {"id": 9, "name": "verification + UAT", "status": "done", "commit": "f668c07"}
+    {"id": 1, "name": "Phase 11 plan 01 — position schema, split detection, delist flagging", "status": "done", "commit": "merged-11-01"},
+    {"id": 2, "name": "Phase 11 plan 02 — position stop walk, split accumulation, regime events", "status": "done", "commit": "merged-11-02"},
+    {"id": 3, "name": "Phase 11 plan 03 — catch-up rendering, audit event, verification gate", "status": "done", "commit": "94ba0af"},
+    {"id": 4, "name": "Code review (11-REVIEW.md) — all 4 CRs and 6 WRs fixed", "status": "done", "commit": "f1d4f6b"},
+    {"id": 5, "name": "README phase 11 status → Complete; pyright spx_closes suppression", "status": "done", "commit": "pending"}
   ],
   "remaining_tasks": [],
-  "blockers": [
-    {
-      "description": "4 human UAT items blocked on live scan/position data",
-      "type": "human_action",
-      "workaround": "These can only be verified after running bensdorp1 scan on a live trading day and recording at least one buy"
-    }
-  ],
-  "human_actions_pending": [
-    {
-      "action": "Verify `bensdorp1 last` verbatim output rendering after a live scan",
-      "context": "markup=False confirmed in code; terminal rendering needs human visual check",
-      "blocking": false
-    },
-    {
-      "action": "Verify `bensdorp1 history` 5-column table alignment after a live scan",
-      "context": "Requires at least one scan record in DB",
-      "blocking": false
-    },
-    {
-      "action": "Verify `bensdorp1 portfolio` 10-column layout after recording a buy",
-      "context": "Requires at least one open position in DB",
-      "blocking": false
-    },
-    {
-      "action": "Verify `bensdorp1 detail SYMBOL` stop-history math after a buy + price data",
-      "context": "Requires open position with multiple days of price_daily rows",
-      "blocking": false
-    }
-  ],
+  "blockers": [],
+  "human_actions_pending": [],
   "decisions": [
     {
-      "decision": "4 blocked UAT items accepted as live-data-only",
-      "rationale": "Items require actual scan run and buy confirmation — cannot be seeded synthetically without breaking strategy invariants",
-      "phase": "09"
+      "decision": "Pyright 'to_yfinance unknown import' is stale IDE cache — no code fix needed",
+      "rationale": "pyright CLI reports 0 errors; runtime import confirmed working; rename from _to_yfinance happened last session",
+      "phase": "11"
+    },
+    {
+      "decision": "Pyright '★ not accessed' warnings are false positives for function parameters",
+      "rationale": "All flagged lines are function signature parameters, not local variables — Pyright incorrectly fires reportUnusedVariable on them",
+      "phase": "11"
     }
   ],
   "uncommitted_files": [
-    ".planning/phases/08-confirmation-commands/08-PATTERNS.md"
+    "README.md",
+    "src/bensdorp1/commands/_scan_engine.py",
+    ".planning/phases/11-catch-up-logic/11-PATTERNS.md"
   ],
-  "next_action": "Run /gsd-complete-milestone to archive phase 09 and close out v1, OR run /gsd-audit-milestone to validate milestone completion before archiving",
-  "context_notes": "Phase 09 is the final phase of v1. All 9 plans executed. 27 automated verification truths all VERIFIED. 366 tests passing, 92% coverage, mypy strict clean, ruff clean. 4 UAT items are live-data-blocked — they pass once the user performs their first real scan and buy. The project is functionally complete and ready for real-world use."
+  "next_action": "Start Phase 8 (buy/sell/fix commands) — run /gsd-discuss-phase 8 to gather requirements.",
+  "context_notes": "Phase 11 is fully complete including code review. All 393 tests pass. mypy/ruff clean. 11 of 14 planned phases done. Next in sequence is Phase 12 (validate command) but Phase 8 (buy/sell/fix) unlocks trade recording and is a higher-value next step."
 }
