@@ -15,6 +15,7 @@ from sqlalchemy import (
     MetaData,
     Table,
     Text,
+    text,
 )
 
 metadata: MetaData = MetaData()
@@ -56,6 +57,7 @@ positions: Table = Table(
     Column("realized_pnl", Float, nullable=True),
     Column("closed_reason", Text, nullable=True),
     Column("closed_manual_reason", Text, nullable=True),
+    Column("delisted", Integer, nullable=False, server_default=text("0")),
 )
 Index(
     "ix_positions_open_symbol",

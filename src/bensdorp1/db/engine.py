@@ -81,6 +81,7 @@ def run_migrations(engine: Engine) -> None:
         for stmt in [
             "ALTER TABLE positions ADD COLUMN closed_reason TEXT",
             "ALTER TABLE positions ADD COLUMN closed_manual_reason TEXT",
+            "ALTER TABLE positions ADD COLUMN delisted INTEGER NOT NULL DEFAULT 0",
         ]:
             try:
                 conn.execute(text(stmt))
