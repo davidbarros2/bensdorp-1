@@ -203,6 +203,8 @@ def run_scan(
         # missed days (complete market delist), only during catch-up window.
         if missed_list:
             for pos in open_positions:
+                if pos.delisted == 1:
+                    continue  # already flagged — D-11 set-once; no Template 7 repeat
                 closes_on_missed = [
                     _get_close_for_day(price_dfs, pos.symbol, d) for d in missed_list
                 ]
