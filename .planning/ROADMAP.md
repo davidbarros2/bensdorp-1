@@ -23,7 +23,7 @@ bensdorp1 is built in fourteen horizontal layers, each completing a technical st
 - [x] **Phase 8: Confirmation Commands** - `buy`, `sell`, `fix` — transaction recording and correction (completed 2026-05-25)
 - [x] **Phase 9: Consultation Commands** - `portfolio`, `detail`, `last`, `history`, `cash`, `config`, `audit` (completed 2026-05-25)
 - [x] **Phase 10: System Commands** - `status`, `refresh`, `restore` (completed 2026-05-30)
-- [ ] **Phase 11: Catch-Up Logic** - Absence reconstruction, split detection, delisted position handling
+- [x] **Phase 11: Catch-Up Logic** - Absence reconstruction, split detection, delisted position handling (completed 2026-05-30)
 - [ ] **Phase 12: Validation Mode** - `validate DATE` — stateless historical verification
 - [ ] **Phase 13: Edge Cases and Hardening** - Snapshot tests, integration tests, adversarial inputs
 - [ ] **Phase 14: Documentation and Finalization** - README, CONTRIBUTING.md, final polish
@@ -356,15 +356,15 @@ Wave 3 (blocked on Waves 1 and 2)
 
 **Wave 1** — Foundation (schema, templates, contracts)
 
-- [ ] 11-01-PLAN.md — positions.delisted column + migration; events.py (13 catch-up templates + split notification); _OpenPosition/_query_open_positions extension; test_catchup.py scaffold (14 stubs)
+- [x] 11-01-PLAN.md — positions.delisted column + migration; events.py (13 catch-up templates + split notification); _OpenPosition/_query_open_positions extension; test_catchup.py scaffold (14 stubs)
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 11-02-PLAN.md — engine logic: _apply_splits (D-05/D-06), _detect_delisted_positions, extended _run_preflight (last_scan_date), event-accumulating missed-days walk (dividends, regime); 10 tests
+- [x] 11-02-PLAN.md — engine logic: _apply_splits (D-05/D-06), _detect_delisted_positions, extended _run_preflight (last_scan_date), event-accumulating missed-days walk (dividends, regime); 10 tests
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
-- [ ] 11-03-PLAN.md — catch-up summary rendering (§7.6, D-01..D-04), composite collapse, Template 7 (D-09), CATCH_UP_PERFORMED logging, stale-comment cleanup; remaining tests + full verification gate
+- [x] 11-03-PLAN.md — catch-up summary rendering (§7.6, D-01..D-04), composite collapse, Template 7 (D-09), CATCH_UP_PERFORMED logging, stale-comment cleanup; remaining tests + full verification gate
 
 **Cross-cutting constraints:** No Alembic — schema changes via run_migrations() ALTER TABLE; events.py is pure formatters (no I/O, format_price for all dollars); all capture.print() args wrapped in Text(); ticker period↔hyphen normalization reuses prices.py (DATA-08 — no second normalization site); SQLAlchemy parameterized queries only; D-05 window approach for split idempotency (no extra tracking column); CATCH_UP_PERFORMED only when len(missed_days) >= 1; Template 7 only when zero price rows across ALL missed days (D-09).
 
@@ -424,7 +424,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | 8. Confirmation Commands | 7/7 | Complete   | 2026-05-25 |
 | 9. Consultation Commands | 9/9 | Complete   | 2026-05-25 |
 | 10. System Commands | 4/4 | Complete    | 2026-05-30 |
-| 11. Catch-Up Logic | 0/3 | Not started | - |
+| 11. Catch-Up Logic | 3/3 | Complete   | 2026-05-30 |
 | 12. Validation Mode | 0/TBD | Not started | - |
 | 13. Edge Cases and Hardening | 0/TBD | Not started | - |
 | 14. Documentation and Finalization | 0/TBD | Not started | - |
