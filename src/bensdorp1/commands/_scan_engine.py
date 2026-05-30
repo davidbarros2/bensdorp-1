@@ -43,7 +43,7 @@ from bensdorp1.data import (
     get_trading_days,
     update_price_data,
 )
-from bensdorp1.data.prices import _to_yfinance  # DATA-08: sole normalization site
+from bensdorp1.data.prices import to_yfinance  # DATA-08: sole normalization site
 from bensdorp1.db import AuditEventType, create_backup, log_event
 from bensdorp1.db.schema import (
     config as config_table,
@@ -570,7 +570,7 @@ def _apply_splits(
             last_scan_date if last_scan_date is not None else entry_d,
         )
         try:
-            splits: Any = yf.Ticker(_to_yfinance(pos.symbol)).splits
+            splits: Any = yf.Ticker(to_yfinance(pos.symbol)).splits
         except Exception:
             continue  # data unavailable — skip split check for this position
 
@@ -877,7 +877,7 @@ def _update_position_stops(
     if missed_days and catch_up_events is not None:
         for pos in open_positions:
             try:
-                divs: Any = yf.Ticker(_to_yfinance(pos.symbol)).dividends
+                divs: Any = yf.Ticker(to_yfinance(pos.symbol)).dividends
                 dividends_by_symbol[pos.symbol] = divs
             except Exception:
                 pass

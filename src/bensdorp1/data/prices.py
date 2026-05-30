@@ -39,7 +39,7 @@ BACKOFF_DELAYS: list[float] = [1.0, 2.0]
 DEFAULT_REQUIRED_TRADING_DAYS: int = 220
 
 
-def _to_yfinance(symbol: str) -> str:
+def to_yfinance(symbol: str) -> str:
     """Convert DB period form to yfinance hyphen form. BRK.B -> BRK-B."""
     return symbol.replace(".", "-")
 
@@ -227,7 +227,7 @@ def update_price_data(
     """Download prices for symbols (+^GSPC always); persist into price_daily.
 
     On any ticker exhausting 3 retries, emit DATA_FETCH_FAILED audit event.
-    Symbols are DB period form (BRK.B); _to_yfinance converts to hyphen form
+    Symbols are DB period form (BRK.B); to_yfinance converts to hyphen form
     only at yfinance call site. Default date range: today minus ~350 calendar
     days through today (covers 220 trading days with buffer).
     """
@@ -238,7 +238,7 @@ def update_price_data(
 
     # D-04: ^GSPC ALWAYS included regardless of constituents list
     db_set: set[str] = set(symbols) | {SPX_TICKER}
-    yf_tickers = sorted({_to_yfinance(s) for s in db_set})
+    yf_tickers = sorted({to_yfinance(s) for s in db_set})
     expected_yf = set(yf_tickers)
 
     stacked = _download_bulk(yf_tickers, start.isoformat(), end.isoformat())
