@@ -27,9 +27,15 @@ from bensdorp1.ui import format_date, format_timezone_pair, render_kv_block
 # Thresholds (days)
 # ---------------------------------------------------------------------------
 
+# Constituents: OK (<=7 days) → STALE (<=14 days) → OUTDATED (>14 days)
 _STALE_DAYS_CONSTITUENTS = 7
-_WARNING_DAYS_CONSTITUENTS = 14
+_OUTDATED_DAYS_CONSTITUENTS = 14
+
+# Backup: OK (<=3 days) → STALE (<=7 days) → OUTDATED (>7 days)
 _STALE_DAYS_BACKUP = 3
+_OUTDATED_DAYS_BACKUP = 7
+
+# Severity ordering: OK < STALE < OUTDATED (used in both data and backup sections)
 
 
 # ---------------------------------------------------------------------------
@@ -75,10 +81,10 @@ def _constituents_section(engine: Engine) -> dict[str, str]:
         age = datetime.now(UTC) - last_fetched
         if age <= timedelta(days=_STALE_DAYS_CONSTITUENTS):
             label = "OK"
-        elif age <= timedelta(days=_WARNING_DAYS_CONSTITUENTS):
+        elif age <= timedelta(days=_OUTDATED_DAYS_CONSTITUENTS):
             label = "STALE"
         else:
-            label = "WARNING"
+            label = "OUTDATED"
 
         constituents_value = (
             f"{ticker_count} tickers, last updated {format_date(last_fetched.date())}"
@@ -116,7 +122,12 @@ def _backup_section(backups_dir: Path) -> dict[str, str]:
     mtime: datetime = datetime.fromtimestamp(newest.stat().st_mtime, tz=UTC)
     now = datetime.now(UTC)
     age_days = (now - mtime).days
-    label = "OK" if age_days <= _STALE_DAYS_BACKUP else "STALE"
+    if age_days <= _STALE_DAYS_BACKUP:
+        label = "OK"
+    elif age_days <= _OUTDATED_DAYS_BACKUP:
+        label = "STALE"
+    else:
+        label = "OUTDATED"
 
     return {
         "Last backup": f"{format_timezone_pair(mtime)}  {_health_label(label)}",
