@@ -36,7 +36,7 @@ This is a single-version project. All requirements below are v1. There is no v2 
 ### Commands — Setup
 
 - [ ] **CMD-01**: `bensdorp1 init` — interactive first-run setup: creates ~/bensdorp1/ directory tree, SQLite DB, fetches constituents, downloads 220-day price history, records initial cash; refuses if DB already exists
-- [ ] **CMD-02**: `bensdorp1 restore PATH` — replaces current DB with backup; validates schema; two confirmation prompts; creates pre-restore backup automatically
+- [x] **CMD-02**: `bensdorp1 restore PATH` — replaces current DB with backup; validates schema; two confirmation prompts; creates pre-restore backup automatically
 
 ### Commands — Daily Operation
 
@@ -63,8 +63,8 @@ This is a single-version project. All requirements below are v1. There is no v2 
 ### Commands — Audit and System
 
 - [ ] **CMD-13**: `bensdorp1 audit [--symbol SYMBOL] [--since DATE] [--until DATE] [--type TYPE] [--limit N]` — queries audit log with AND-filter logic; most recent first
-- [ ] **CMD-14**: `bensdorp1 status` — diagnostic dashboard: data status, backup status, DB health, operational summary
-- [ ] **CMD-15**: `bensdorp1 refresh` — forces re-fetch and re-verification of S&P 500 constituents from both sources
+- [x] **CMD-14**: `bensdorp1 status` — diagnostic dashboard: data status, backup status, DB health, operational summary
+- [x] **CMD-15**: `bensdorp1 refresh` — forces re-fetch and re-verification of S&P 500 constituents from both sources
 
 ### Commands — Validation and Help
 
@@ -164,7 +164,7 @@ None. This is a single-version project. v1 is the only version. Post-v1 is maint
 | DATA-09 | Phase 3: Data Sources | Complete |
 | DATA-10 | Phase 3: Data Sources | Complete |
 | CMD-01 | Phase 6: First-Run Init Command | Pending |
-| CMD-02 | Phase 10: System Commands | Pending |
+| CMD-02 | Phase 10: System Commands | Complete |
 | CMD-03 | Phase 7: Scan Command | Complete |
 | CMD-04 | Phase 9: Consultation Commands | Pending |
 | CMD-05 | Phase 9: Consultation Commands | Pending |
@@ -176,8 +176,8 @@ None. This is a single-version project. v1 is the only version. Post-v1 is maint
 | CMD-11 | Phase 9: Consultation Commands | Pending |
 | CMD-12 | Phase 9: Consultation Commands | Pending |
 | CMD-13 | Phase 9: Consultation Commands | Pending |
-| CMD-14 | Phase 10: System Commands | Pending |
-| CMD-15 | Phase 10: System Commands | Pending |
+| CMD-14 | Phase 10: System Commands | Complete |
+| CMD-15 | Phase 10: System Commands | Complete |
 | CMD-16 | Phase 12: Validation Mode | Pending |
 | CMD-17 | Phase 1: Project Skeleton and Tooling | Complete |
 | STATE-01 | Phase 2: Database and Migrations | Complete |
