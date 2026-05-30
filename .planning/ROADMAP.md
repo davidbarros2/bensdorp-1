@@ -326,7 +326,19 @@ Wave 3 (blocked on Waves 1 and 2)
   2. `bensdorp1 refresh` re-fetches and re-verifies S&P 500 constituents from both Wikipedia and Slickcharts, applies discrepancy rules, and writes a `constituents_updated` audit event
   3. `bensdorp1 restore PATH` validates the target file's schema, shows two confirmation prompts, creates a pre-restore backup automatically, replaces the active DB, and writes a `restore_performed` audit event
 
-**Plans**: TBD
+**Plans**: 4 plans in 2 waves
+
+**Wave 1** — Implementation (three parallel plans — independent files)
+
+- [ ] 10-01-PLAN.md — status.py (CMD-14) + test_status.py
+- [ ] 10-02-PLAN.md — refresh.py (CMD-15) + test_refresh.py
+- [ ] 10-03-PLAN.md — restore.py (CMD-02) + test_restore.py
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
+- [ ] 10-04-PLAN.md — Verification gate (pytest --cov ≥ 90%, mypy strict, ruff check, ruff format, --help smoke)
+
+**Cross-cutting constraints:** Single file per command (D-16 — same as Phase 8 D-25 / Phase 9 D-09); use `refresh_constituents` NOT fetch_constituents (Pitfall 3); status section headers and separators use `Text()` + `markup=False, highlight=False`; `render_kv_block` already uses markup=False; PRAGMA integrity_check uses `.fetchall()` (multi-row failure case — Pitfall 4); restore secondary engine MUST be `.dispose()`d in `finally:` before file copy (Windows file-locking — Pitfall 2); restore pre-restore backup uses inline `shutil.copy2` with filename `bensdorp1-pre-restore-{ts}.db` (D-10 + spec §10 + Open Question 1); restore logs `RESTORE_PERFORMED` to the restored (new) database; backup directory scan guards against missing dir (Pitfall 5); EXPECTED_TABLES contains all 8 names (Pitfall 6); all DB queries use SQLAlchemy parameterized expression language.
 
 ### Phase 11: Catch-Up Logic
 
@@ -397,7 +409,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | 7. Scan Command | 4/4 | Complete    | 2026-05-24 |
 | 8. Confirmation Commands | 7/7 | Complete   | 2026-05-25 |
 | 9. Consultation Commands | 9/9 | Complete   | 2026-05-25 |
-| 10. System Commands | 0/TBD | Not started | - |
+| 10. System Commands | 0/4 | Planned | - |
 | 11. Catch-Up Logic | 0/TBD | Not started | - |
 | 12. Validation Mode | 0/TBD | Not started | - |
 | 13. Edge Cases and Hardening | 0/TBD | Not started | - |
