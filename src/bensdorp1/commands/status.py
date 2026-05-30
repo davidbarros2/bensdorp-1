@@ -39,16 +39,6 @@ _OUTDATED_DAYS_BACKUP = 7
 
 
 # ---------------------------------------------------------------------------
-# Health label helper
-# ---------------------------------------------------------------------------
-
-
-def _health_label(label: str) -> str:
-    """Return '[OK]', '[STALE]', '[WARNING]', or '[FAILED]' plain-text string."""
-    return f"[{label}]"
-
-
-# ---------------------------------------------------------------------------
 # Section helpers
 # ---------------------------------------------------------------------------
 
@@ -71,7 +61,7 @@ def _constituents_section(engine: Engine) -> dict[str, str]:
     price_count: int = price_count_row if price_count_row is not None else 0
 
     if ticker_count == 0 or last_fetched_raw is None:
-        constituents_value = f"0 tickers (cache empty)  {_health_label('WARNING')}"
+        constituents_value = "0 tickers (cache empty)  [OUTDATED]"
     else:
         # Coerce SQLite-returned naive datetime to UTC-aware
         last_fetched: datetime = last_fetched_raw
@@ -88,7 +78,7 @@ def _constituents_section(engine: Engine) -> dict[str, str]:
 
         constituents_value = (
             f"{ticker_count} tickers, last updated {format_date(last_fetched.date())}"
-            f"  {_health_label(label)}"
+            f"  [{label}]"
         )
 
     return {
@@ -130,7 +120,7 @@ def _backup_section(backups_dir: Path) -> dict[str, str]:
         label = "OUTDATED"
 
     return {
-        "Last backup": f"{format_timezone_pair(mtime)}  {_health_label(label)}",
+        "Last backup": f"{format_timezone_pair(mtime)}  [{label}]",
         "Location": str(newest),
         "Snapshots": str(len(db_files)),  # includes bensdorp1-latest.db
     }
@@ -174,7 +164,7 @@ def _operational_section(engine: Engine) -> dict[str, str]:
     pending_count: int = pending_count_raw if pending_count_raw is not None else 0
 
     if last_scan_raw is None:
-        last_scan_value = f"Never  {_health_label('STALE')}"
+        last_scan_value = "Never  [STALE]"
     else:
         # Coerce SQLite-returned naive datetime to UTC-aware
         last_scan_dt: datetime = last_scan_raw
@@ -200,7 +190,7 @@ def _operational_section(engine: Engine) -> dict[str, str]:
             if isinstance(last_scan_dt, datetime)
             else str(last_scan_dt)
         )
-        last_scan_value = f"{scan_date_display}  {_health_label(label)}"
+        last_scan_value = f"{scan_date_display}  [{label}]"
 
     return {
         "Last scan": last_scan_value,
