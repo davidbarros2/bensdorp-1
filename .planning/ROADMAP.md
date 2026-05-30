@@ -22,7 +22,7 @@ bensdorp1 is built in fourteen horizontal layers, each completing a technical st
 - [x] **Phase 7: Scan Command** - `scan` — daily screening, regime/liquidity/momentum filters, exit triggers, buy candidates (completed 2026-05-24)
 - [x] **Phase 8: Confirmation Commands** - `buy`, `sell`, `fix` — transaction recording and correction (completed 2026-05-25)
 - [x] **Phase 9: Consultation Commands** - `portfolio`, `detail`, `last`, `history`, `cash`, `config`, `audit` (completed 2026-05-25)
-- [ ] **Phase 10: System Commands** - `status`, `refresh`, `restore`
+- [x] **Phase 10: System Commands** - `status`, `refresh`, `restore` (completed 2026-05-30)
 - [ ] **Phase 11: Catch-Up Logic** - Absence reconstruction, split detection, delisted position handling
 - [ ] **Phase 12: Validation Mode** - `validate DATE` — stateless historical verification
 - [ ] **Phase 13: Edge Cases and Hardening** - Snapshot tests, integration tests, adversarial inputs
@@ -336,7 +336,7 @@ Wave 3 (blocked on Waves 1 and 2)
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 10-04-PLAN.md — Verification gate (pytest --cov ≥ 90%, mypy strict, ruff check, ruff format, --help smoke)
+- [x] 10-04-PLAN.md — Verification gate (pytest --cov ≥ 90%, mypy strict, ruff check, ruff format, --help smoke)
 
 **Cross-cutting constraints:** Single file per command (D-16 — same as Phase 8 D-25 / Phase 9 D-09); use `refresh_constituents` NOT fetch_constituents (Pitfall 3); status section headers and separators use `Text()` + `markup=False, highlight=False`; `render_kv_block` already uses markup=False; PRAGMA integrity_check uses `.fetchall()` (multi-row failure case — Pitfall 4); restore secondary engine MUST be `.dispose()`d in `finally:` before file copy (Windows file-locking — Pitfall 2); restore pre-restore backup uses inline `shutil.copy2` with filename `bensdorp1-pre-restore-{ts}.db` (D-10 + spec §10 + Open Question 1); restore logs `RESTORE_PERFORMED` to the restored (new) database; backup directory scan guards against missing dir (Pitfall 5); EXPECTED_TABLES contains all 8 names (Pitfall 6); all DB queries use SQLAlchemy parameterized expression language.
 
@@ -409,7 +409,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | 7. Scan Command | 4/4 | Complete    | 2026-05-24 |
 | 8. Confirmation Commands | 7/7 | Complete   | 2026-05-25 |
 | 9. Consultation Commands | 9/9 | Complete   | 2026-05-25 |
-| 10. System Commands | 3/4 | In Progress|  |
+| 10. System Commands | 4/4 | Complete   | 2026-05-30 |
 | 11. Catch-Up Logic | 0/TBD | Not started | - |
 | 12. Validation Mode | 0/TBD | Not started | - |
 | 13. Edge Cases and Hardening | 0/TBD | Not started | - |
