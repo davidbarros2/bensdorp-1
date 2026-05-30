@@ -352,7 +352,10 @@ def _run_preflight(
 
     with engine.connect() as conn:
         row = conn.execute(
-            select(scans.c.scan_date).order_by(scans.c.scan_date.desc()).limit(1)
+            select(scans.c.scan_date)
+            .where(scans.c.raw_output.isnot(None))  # exclude placeholders (WR-01)
+            .order_by(scans.c.scan_date.desc())
+            .limit(1)
         ).fetchone()
 
     if row is not None:
