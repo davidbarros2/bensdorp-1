@@ -772,11 +772,15 @@ def _get_close_for_day(
     df = price_dfs.get(symbol)
     if df is None or df.empty:
         return None
-    # Vectorized date comparison — avoids Python-level loop overhead (WR-03)
-    dates = df["trade_date"].apply(
-        lambda td: td.date() if hasattr(td, "date") else date(td.year, td.month, td.day)
-    )
-    mask = dates == target_date
+    # Use pandas-native date extraction for type safety and performance.
+    # .dt.date works on datetime64 columns; fall back to isinstance check for
+    # object-dtype columns (e.g. Python date/datetime objects stored directly).
+    if pd.api.types.is_datetime64_any_dtype(df["trade_date"]):
+        mask = df["trade_date"].dt.date == target_date
+    else:
+        mask = df["trade_date"].apply(
+            lambda td: td.date() if isinstance(td, datetime) else td
+        ) == target_date
     matched = df.loc[mask, "close"]
     if matched.empty:
         return None
