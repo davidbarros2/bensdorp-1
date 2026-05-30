@@ -279,8 +279,8 @@ def run_scan(
         )
 
         # 12. Audit events + backup
-        # CATCH_UP_PERFORMED: logged once per absence (Pitfall 5: len >= 1 means
-        # at least 2 elapsed trading days, satisfying spec §7.6 "N >= 2" threshold)
+        # CATCH_UP_PERFORMED: logged once per absence (spec §7.6 "N >= 1" —
+        # at least 1 missed trading day triggers the catch-up audit event).
         if len(missed_list) >= 1:
             log_event(
                 engine,
