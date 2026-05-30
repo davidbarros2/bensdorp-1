@@ -742,17 +742,19 @@ No missing dependencies. All required libraries are already in `pyproject.toml`.
 
 ---
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **Catch-up summary threshold: is it len(missed_days) >= 1 or >= 2?**
    - What we know: spec §7.6 says "absence of N >= 2 trading days". `missed_days` in the existing code is `get_trading_days(last_scan_date + 1, yesterday)`. If the user scanned Monday and runs again Wednesday, `missed_days = [Tuesday]` — length 1. Total trading days elapsed = 2 (Tuesday + today).
    - What's unclear: does the spec threshold of "N >= 2" mean 2 elapsed days (so len(missed_days) >= 1 triggers the summary) or 2 missed days (len(missed_days) >= 2)?
    - Recommendation: The spec example shows "absent for 5 trading days" with an explicit multi-day range. Given CONTEXT.md D-01 says "when absent >= 2 trading days," interpret this as len(missed_days) >= 1 (one missed day means two elapsed trading days). The planner should confirm this interpretation or add a code comment referencing the spec.
+   - **RESOLVED:** Use `len(missed_days) >= 1` — one missed day means two elapsed trading days, satisfying the spec's "N >= 2 trading days" threshold. All plans (Plan 02 Task 2, Plan 03 Task 2) use this interpretation consistently.
 
 2. **Template 4 (removed from S&P 500) date parameter**
    - What we know: Template 4 says `{SYMBOL}  Removed from S&P 500 on {DATE}.` but the detection happens at scan time by comparing current constituents — the exact removal date is not stored.
    - What's unclear: what date to use for the template — today's scan date, or some yfinance-derived date?
    - Recommendation: Use today's date as the detection date, with a comment that the actual removal may have occurred during the absence. The CONTEXT.md D-09 pattern for Template 7 sets a precedent for best-effort data.
+   - **RESOLVED:** Use `date=None` — `render_removed_from_sp500(symbol, removal_date=None)` omits the " on {DATE}" clause when None (best-effort detection at scan time). Plans 01 Task 2 and 02 Task 2 both use `None` consistently.
 
 ---
 
