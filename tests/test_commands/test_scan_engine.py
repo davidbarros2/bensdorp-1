@@ -565,7 +565,7 @@ def test_render_output_bull_no_triggers() -> None:
         pending_triggers=[],
         candidates=candidates,  # type: ignore[arg-type]
         cash=10000.0,
-        catch_up_notes=[],
+        catch_up_events={},
         avg_volumes=avg_volumes,
     )
 
@@ -575,13 +575,12 @@ def test_render_output_bull_no_triggers() -> None:
     assert "Buy candidates (top 10)" in text
     assert "AAPL" in text
     assert "System notes" in text
-    assert "No catch-up actions needed" in text
+    assert "No system notes" in text
 
 
 def test_render_output_bear_regime() -> None:
     """Bear market: buy candidates section absent; bear note in system notes."""
     capture = Console(record=True, width=120)
-    catch_up_notes: list[str] = []
 
     _render_output(
         capture,
@@ -593,14 +592,15 @@ def test_render_output_bear_regime() -> None:
         pending_triggers=[],
         candidates=[],
         cash=10000.0,
-        catch_up_notes=catch_up_notes,
+        catch_up_events={},
         avg_volumes={},
     )
 
     text = capture.export_text()
     assert "Bear market" in text
     assert "Buy candidates" not in text
-    assert "Bear market" in " ".join(catch_up_notes)
+    # Bear market note appears in System notes section
+    assert "Regime: Bear market" in text
 
 
 def test_render_output_with_today_triggers() -> None:
@@ -618,7 +618,7 @@ def test_render_output_with_today_triggers() -> None:
         pending_triggers=[],
         candidates=[],
         cash=10000.0,
-        catch_up_notes=[],
+        catch_up_events={},
         avg_volumes={},
     )
 
@@ -645,7 +645,7 @@ def test_render_output_multiple_triggers_plural() -> None:
         pending_triggers=[],
         candidates=[],
         cash=10000.0,
-        catch_up_notes=[],
+        catch_up_events={},
         avg_volumes={},
     )
 
@@ -669,7 +669,7 @@ def test_render_output_pending_triggers() -> None:
         pending_triggers=[pending],
         candidates=[],
         cash=10000.0,
-        catch_up_notes=[],
+        catch_up_events={},
         avg_volumes={},
     )
 
@@ -695,7 +695,7 @@ def test_render_output_multiple_pending_triggers() -> None:
         pending_triggers=[p1, p2],
         candidates=[],
         cash=10000.0,
-        catch_up_notes=[],
+        catch_up_events={},
         avg_volumes={},
     )
 
@@ -725,7 +725,7 @@ def test_render_output_no_affordable_candidates() -> None:
         pending_triggers=[],
         candidates=candidates,  # type: ignore[arg-type]
         cash=100.0,
-        catch_up_notes=[],
+        catch_up_events={},
         avg_volumes={"AAPL": 1_000_000},
     )
 
@@ -734,7 +734,7 @@ def test_render_output_no_affordable_candidates() -> None:
 
 
 def test_render_output_catch_up_notes() -> None:
-    """System notes section renders catch-up notes when present."""
+    """Catch-up summary block renders when missed_days is non-empty."""
     capture = Console(record=True, width=120)
 
     _render_output(
@@ -747,12 +747,16 @@ def test_render_output_catch_up_notes() -> None:
         pending_triggers=[],
         candidates=[],
         cash=0.0,
-        catch_up_notes=["Catch-up: updated stop levels for 2 missed trading days."],
+        catch_up_events={},
         avg_volumes={},
+        missed_days=[date(2026, 5, 20), date(2026, 5, 21)],
+        open_positions_count=3,
     )
 
     text = capture.export_text()
-    assert "Catch-up: updated stop levels" in text
+    assert "Catch-up summary" in text
+    assert "absent for 2 trading days" in text
+    assert "updated for 3 open positions" in text
 
 
 # ---------------------------------------------------------------------------

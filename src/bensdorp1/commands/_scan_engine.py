@@ -24,8 +24,10 @@ from sqlalchemy.dialects.sqlite import insert as sqlite_insert
 from sqlalchemy.engine import Engine
 
 from bensdorp1.commands.events import (
+    render_composite,
     render_dividend,
     render_initial_stop_violated,
+    render_market_delist,
     render_new_highest_close,
     render_regime_bear_to_bull,
     render_regime_bull_to_bear,
@@ -156,8 +158,8 @@ def run_scan(
         )
 
         # 1. Pre-flight: constituents, coverage, catch-up detection
-        constituents, missed_days, catch_up_notes, freshness_days, last_scan_date = (
-            _run_preflight(engine, con, today)
+        constituents, missed_days, freshness_days, last_scan_date = _run_preflight(
+            engine, con, today
         )
         symbols: list[str] = list(constituents.keys())
         all_symbols: list[str] = symbols + ["^GSPC"]
@@ -176,6 +178,7 @@ def run_scan(
         # 4b. Detect newly delisted positions (STATE-07)
         missed_list: list[date] = [d.date() for d in missed_days]
         catch_up_events: dict[str, list[str]] = {}
+        split_notifications: list[str] = []
         delisted_events = _detect_delisted_positions(
             engine, open_positions, constituents
         )
@@ -195,7 +198,19 @@ def run_scan(
             triggered_position_ids,
             last_scan_date=last_scan_date,
             catch_up_events=catch_up_events,
+            split_notifications=split_notifications,
         )
+
+        # 5b. Template 7 (D-09): detect positions with zero price rows across ALL
+        # missed days (complete market delist), only during catch-up window.
+        if missed_list:
+            for pos in open_positions:
+                closes_on_missed = [
+                    _get_close_for_day(price_dfs, pos.symbol, d) for d in missed_list
+                ]
+                if all(c is None for c in closes_on_missed):
+                    delist_ev = render_market_delist(pos.symbol, delist_date=None)
+                    catch_up_events.setdefault(pos.symbol, []).append(delist_ev)
 
         # Persist a temporary scan placeholder so _detect_exit_triggers can
         # reference it via FK. We will update it with raw_output in _persist_scan.
@@ -237,8 +252,11 @@ def run_scan(
             pending_trigger_rows,
             candidates,
             available_cash,
-            catch_up_notes,
+            catch_up_events,
             avg_volumes,
+            missed_days=missed_list,
+            open_positions_count=len(open_positions),
+            split_notifications=split_notifications,
         )
 
         raw_output: str = capture.export_text()
@@ -260,7 +278,19 @@ def run_scan(
             now_utc,
         )
 
-        # 12. Audit event + backup
+        # 12. Audit events + backup
+        # CATCH_UP_PERFORMED: logged once per absence (Pitfall 5: len >= 1 means
+        # at least 2 elapsed trading days, satisfying spec §7.6 "N >= 2" threshold)
+        if len(missed_list) >= 1:
+            log_event(
+                engine,
+                AuditEventType.CATCH_UP_PERFORMED,
+                payload={
+                    "missed_days": len(missed_list),
+                    "start_date": missed_list[0].isoformat(),
+                    "end_date": missed_list[-1].isoformat(),
+                },
+            )
         log_event(
             engine,
             AuditEventType.SCAN_PERFORMED,
@@ -293,14 +323,17 @@ def _run_preflight(
     engine: Engine,
     con: Console,
     today: date,
-) -> tuple[dict[str, str], pd.DatetimeIndex, list[str], int, date | None]:
+) -> tuple[dict[str, str], pd.DatetimeIndex, int, date | None]:
     """Run pre-flight checks and return execution context.
 
     Returns:
-        (constituents, missed_days, catch_up_notes, freshness_days, last_scan_date)
+        (constituents, missed_days, freshness_days, last_scan_date)
 
     Pitfall 7: last_scan_date is now returned so _apply_splits can compute the
     D-05 split window start. last_scan_date is None if no prior scan exists.
+
+    Phase 11: catch_up_notes dropped — the catch-up summary block rendered by
+    _render_output() replaces it entirely (D-04).
     """
     # 1. Constituents freshness check (D-14)
     constituents, freshness_days = _get_constituents_with_freshness(engine)
@@ -313,9 +346,8 @@ def _run_preflight(
             "Run `bensdorp1 init` or wait for next scan."
         )
 
-    # 3. Catch-up detection (D-08, D-11)
+    # 3. Catch-up detection (D-08)
     missed_days: pd.DatetimeIndex = pd.DatetimeIndex([])
-    catch_up_notes: list[str] = []
     last_scan_date: date | None = None
 
     with engine.connect() as conn:
@@ -329,13 +361,8 @@ def _run_preflight(
         start_of_window: date = last_scan_date + timedelta(days=1)
         if start_of_window <= yesterday:
             missed_days = get_trading_days(start_of_window, yesterday)
-            if len(missed_days) > 0:
-                catch_up_notes.append(
-                    f"Catch-up: updated stop levels for {len(missed_days)} "
-                    "missed trading days."
-                )
 
-    return constituents, missed_days, catch_up_notes, freshness_days, last_scan_date
+    return constituents, missed_days, freshness_days, last_scan_date
 
 
 def _get_constituents_with_freshness(engine: Engine) -> tuple[dict[str, str], int]:
@@ -609,9 +636,7 @@ def _apply_splits(
             )
 
             # Split notification for System notes (spec §8.3)
-            ratio_str: str = (
-                f"{int(ratio)}:1" if ratio == int(ratio) else f"{ratio}:1"
-            )
+            ratio_str: str = f"{int(ratio)}:1" if ratio == int(ratio) else f"{ratio}:1"
             split_notifications.append(
                 render_split_notification(
                     pos.symbol,
@@ -688,9 +713,7 @@ def _detect_delisted_positions(
         # First detection: flag it
         with engine.connect() as conn:
             conn.execute(
-                update(positions)
-                .where(positions.c.id == pos.id)
-                .values(delisted=1)
+                update(positions).where(positions.c.id == pos.id).values(delisted=1)
             )
             conn.commit()
 
@@ -744,6 +767,7 @@ def _update_position_stops(
     *,
     last_scan_date: date | None = None,
     catch_up_events: dict[str, list[str]] | None = None,
+    split_notifications: list[str] | None = None,
 ) -> None:
     """Update position highest_close and trailing_stop for missed days + today.
 
@@ -757,11 +781,14 @@ def _update_position_stops(
 
     Modifies triggered_position_ids in-place to track which positions triggered.
     Accumulates per-position catch-up events in catch_up_events (if provided).
+    split_notifications: caller-owned list to accumulate split System-notes entries.
     """
     # D-07: Apply splits first (before missed-days walk). When catch-up events
     # are being accumulated (missed_days non-empty), also collect Template 5
     # events directly via catchup_split_events.
-    split_notifications: list[str] = []
+    _split_notif: list[str] = (
+        split_notifications if split_notifications is not None else []
+    )
     catchup_split_ev: dict[str, list[str]] | None = (
         {} if (catch_up_events is not None and missed_days) else None
     )
@@ -770,7 +797,7 @@ def _update_position_stops(
         open_positions,
         last_scan_date,
         today,
-        split_notifications,
+        _split_notif,
         catchup_split_ev,
     )
     # Merge Template 5 split events into catch_up_events immediately
@@ -923,7 +950,8 @@ def _update_position_stops(
             if divs is None or (hasattr(divs, "empty") and divs.empty):
                 continue
             missed_start: date = (
-                last_scan_date if last_scan_date is not None
+                last_scan_date
+                if last_scan_date is not None
                 else _entry_date_as_date(pos)
             )
             for div_ts, div_amount in divs.items():
@@ -1192,19 +1220,126 @@ def _render_output(
     pending_triggers: list[_TriggerRow],
     candidates: list[Candidate],
     cash: float,
-    catch_up_notes: list[str],
+    catch_up_events: dict[str, list[str]],
     avg_volumes: dict[str, int],
+    *,
+    missed_days: list[date] | None = None,
+    open_positions_count: int = 0,
+    split_notifications: list[str] | None = None,
 ) -> None:
     """Render all output sections to the capture console per spec §7.2.
 
-    Section order:
+    Section order (D-04):
+    0. Catch-up summary (BEFORE regular sections, only when missed_days non-empty)
     1. Header
     2. Market regime
     3. Exit triggers (today's)
     4. Pending exit triggers (if any)
     5. Buy candidates (if bull market)
     6. System notes
+
+    catch_up_events: dict[str, list[str]] — per-position accumulated events.
+      Sentinel key "_regime" holds regime-change event strings (not per-position).
+    missed_days: calendar of missed trading days (for absence header).
+    open_positions_count: total open positions count (for summary line).
+    split_notifications: System-notes split entries (§8.3 format).
     """
+    _missed: list[date] = missed_days if missed_days is not None else []
+    _split_notif: list[str] = (
+        split_notifications if split_notifications is not None else []
+    )
+
+    # 0. Catch-up summary block (D-04: BEFORE regular sections)
+    # Only emitted when at least one trading day was missed (Pitfall 5).
+    if _missed:
+        n_days = len(_missed)
+        start_str = _missed[0].isoformat()
+        end_str = _missed[-1].isoformat()
+
+        capture.print(Text(SEPARATOR))
+        capture.print(Text("Catch-up summary"))
+        capture.print(Text(SEPARATOR))
+        capture.print()
+        capture.print(
+            Text(
+                f"You were absent for {n_days} trading "
+                f"{'day' if n_days == 1 else 'days'} "
+                f"({start_str} to {end_str})."
+            )
+        )
+        capture.print()
+        capture.print(
+            Text(
+                f"State has been updated for {open_positions_count} open "
+                f"{'position' if open_positions_count == 1 else 'positions'}."
+            )
+        )
+        capture.print()
+
+        # Per-position entries (D-01: silent if 0 events; D-02: composite if >=2)
+        # Regime events under sentinel "_regime" are system-level, not per-position.
+        position_symbols = [k for k in catch_up_events if k != "_regime"]
+        for sym in position_symbols:
+            evs = catch_up_events[sym]
+            if not evs:
+                continue  # D-01: silent
+            if len(evs) == 1:
+                capture.print(Text(evs[0]))
+            else:
+                # D-02: composite — one entry per position with bullets
+                capture.print(Text(render_composite(sym, evs)))
+            capture.print()
+
+        # Regime events (Templates 8-9) — system-level, shown after per-position
+        regime_evs = catch_up_events.get("_regime", [])
+        for rev in regime_evs:
+            capture.print(Text(rev))
+            capture.print()
+
+        # Retroactive pending-triggers table — show missed-day triggers still pending
+        # Build from today_triggers (new triggers from today's scan); these originated
+        # on missed days (triggered_date < today) and are "still pending" per spec §7.6.
+        retro_rows: list[_TriggerRow] = [
+            tr for tr in today_triggers if tr.triggered_date.date() < today
+        ]
+        if retro_rows:
+            capture.print(
+                Text(
+                    "The following retroactive exit triggers are still pending. "
+                    "They will\nalso appear in today's scan output below."
+                )
+            )
+            capture.print()
+            retro_table_rows: list[list[str]] = []
+            for tr in retro_rows:
+                retro_table_rows.append(
+                    [
+                        str(tr.symbol),
+                        format_date(tr.triggered_date.date()),
+                        str(tr.reason),
+                    ]
+                )
+            render_table(
+                columns=[
+                    ("Symbol", "left"),
+                    ("Triggered on", "left"),
+                    ("Reason", "left"),
+                ],
+                rows=retro_table_rows,
+                console=capture,
+            )
+            capture.print()
+            capture.print(
+                Text(
+                    "Confirm sells with `bensdorp1 sell SYMBOL PRICE` as soon as "
+                    "you execute\nthem at market open."
+                )
+            )
+            capture.print()
+
+    # System-notes list (separate from catch-up events — bear market note lives here)
+    system_notes: list[str] = []
+
     # 1. Header
     capture.print(Text(SEPARATOR))
     capture.print(Text(f"Scan for {format_date(today)}"))
@@ -1386,17 +1521,20 @@ def _render_output(
             )
         capture.print()
     else:
-        # D-21: Bear market — add note to system notes
-        catch_up_notes.append("Regime: Bear market. No buy candidates generated.")
+        # D-21: Bear market — add note to system notes (NOT catch-up summary)
+        system_notes.append("Regime: Bear market. No buy candidates generated.")
 
     # 6. System notes
     capture.print(Text("System notes"))
     capture.print(Text("-" * len("System notes")))
-    if catch_up_notes:
-        for note in catch_up_notes:
+    # Split notifications from _apply_splits (spec §8.3 format)
+    for notif in _split_notif:
+        system_notes.append(notif)
+    if system_notes:
+        for note in system_notes:
             capture.print(Text(note))
     else:
-        capture.print(Text("No catch-up actions needed."))
+        capture.print(Text("No system notes."))
     capture.print(Text("Constituents list verified successfully."))
     capture.print()
 
