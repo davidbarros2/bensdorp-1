@@ -1681,26 +1681,23 @@ def _persist_scan(
             )
             conn.commit()
 
-    # Delete existing scan_candidates for this scan_id (idempotent on --force)
-    with engine.connect() as conn:
+    # Delete existing scan_candidates and re-insert atomically (WR-05: wrap both
+    # operations in a single transaction so a partial failure cannot leave
+    # scan_candidates empty while scan_exit_triggers still has valid rows).
+    with engine.begin() as conn:
         conn.execute(
             delete(scan_candidates).where(scan_candidates.c.scan_id == scan_id)
         )
-        conn.commit()
-
-    # Insert scan_candidates rows
-    if candidates:
-        candidate_rows: list[dict[str, Any]] = [
-            {
-                "scan_id": scan_id,
-                "symbol": c["symbol"],
-                "rank": idx,
-                "roc200": c["roc_200"],
-                "close": c["prev_close"],
-                "suggested_shares": c["position_size"],
-            }
-            for idx, c in enumerate(candidates, start=1)
-        ]
-        with engine.connect() as conn:
+        if candidates:
+            candidate_rows: list[dict[str, Any]] = [
+                {
+                    "scan_id": scan_id,
+                    "symbol": c["symbol"],
+                    "rank": idx,
+                    "roc200": c["roc_200"],
+                    "close": c["prev_close"],
+                    "suggested_shares": c["position_size"],
+                }
+                for idx, c in enumerate(candidates, start=1)
+            ]
             conn.execute(insert(scan_candidates), candidate_rows)
-            conn.commit()
