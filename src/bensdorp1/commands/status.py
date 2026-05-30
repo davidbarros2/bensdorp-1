@@ -190,7 +190,9 @@ def _operational_section(engine: Engine) -> dict[str, str]:
                 else last_scan_dt
             )
             label = "OK" if scan_date >= boundary else "STALE"
-        except ValueError:
+        except (ValueError, TypeError):
+            # TypeError: SQLite may return the aggregate as a raw str;
+            # comparing str >= date raises TypeError at runtime.
             label = "STALE"
 
         scan_date_display = (
