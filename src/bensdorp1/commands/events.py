@@ -215,13 +215,25 @@ def render_trading_holidays(
 # ---------------------------------------------------------------------------
 
 
+def _indent_event(ev: str, indent: str = "        ") -> str:
+    """Re-indent all lines of a sub-event string for composite embedding.
+
+    Sub-events already contain their own first-line content; continuation
+    lines are stripped of their original leading whitespace and re-indented
+    under the composite bullet so they align visually beneath the bullet text.
+    """
+    lines = ev.splitlines()
+    return "\n".join(f"{indent}{line.lstrip()}" for line in lines)
+
+
 def render_composite(symbol: str, events_list: list[str]) -> str:
     """Template 13 — Position with multiple events during absence (spec §8.9).
 
     D-02: One entry per position with a bullet list of events.
-    Continuation lines are indented 6 spaces to match spec §7.6 alignment.
+    Each sub-event is re-indented so that continuation lines of multi-line
+    events align under the bullet rather than appearing at column 0.
     """
-    bullets = "\n".join(f"      - {e}" for e in events_list)
+    bullets = "\n".join(f"      - {_indent_event(e)}" for e in events_list)
     return f"{symbol}  Multiple events during your absence:\n{bullets}"
 
 
