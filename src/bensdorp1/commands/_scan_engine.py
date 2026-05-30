@@ -182,9 +182,7 @@ def run_scan(
         delisted_events = _detect_delisted_positions(
             engine, open_positions, constituents
         )
-        for ev in delisted_events:
-            # Extract symbol from event string (first word before double space)
-            sym = ev.split("  ")[0]
+        for sym, ev in delisted_events:
             catch_up_events.setdefault(sym, []).append(ev)
 
         # 5. Update stop levels for missed days + today; detect exit triggers
@@ -691,8 +689,8 @@ def _detect_delisted_positions(
     engine: Engine,
     open_positions: list[_OpenPosition],
     constituents: dict[str, str],
-) -> list[str]:
-    """Return catch-up event strings for newly delisted positions.
+) -> list[tuple[str, str]]:
+    """Return (symbol, event_str) pairs for newly delisted positions.
 
     D-11: Sets positions.delisted = 1 on first detection only (idempotent
     across subsequent scans — flag prevents re-logging). Positions already
@@ -700,8 +698,11 @@ def _detect_delisted_positions(
 
     T-11-05: Only parameterized queries; T-11-07: POSITION_DELISTED_FROM_INDEX
     audit event with position_id payload.
+
+    Returns list of (symbol, rendered_event) tuples so callers do not need
+    to parse the symbol back out of the rendered string.
     """
-    events: list[str] = []
+    events: list[tuple[str, str]] = []
     constituent_symbols: set[str] = set(constituents.keys())
 
     for pos in open_positions:
@@ -724,7 +725,7 @@ def _detect_delisted_positions(
             payload={"position_id": pos.id},
         )
 
-        events.append(render_removed_from_sp500(pos.symbol, removal_date=None))
+        events.append((pos.symbol, render_removed_from_sp500(pos.symbol, removal_date=None)))
 
     return events
 
