@@ -187,7 +187,7 @@ def run_scan(
 
         # 5. Update stop levels for missed days + today; detect exit triggers
         triggered_position_ids: dict[int, tuple[date, float, float]] = {}
-        _update_position_stops(
+        open_positions = _update_position_stops(
             engine,
             open_positions,
             missed_list,
@@ -794,7 +794,7 @@ def _update_position_stops(
     last_scan_date: date | None = None,
     catch_up_events: dict[str, list[str]] | None = None,
     split_notifications: list[str] | None = None,
-) -> None:
+) -> list[_OpenPosition]:
     """Update position highest_close and trailing_stop for missed days + today.
 
     D-07: Once triggered, a position is frozen — no further stop updates.
@@ -808,6 +808,8 @@ def _update_position_stops(
     Modifies triggered_position_ids in-place to track which positions triggered.
     Accumulates per-position catch-up events in catch_up_events (if provided).
     split_notifications: caller-owned list to accumulate split System-notes entries.
+
+    Returns the updated open_positions list (with split adjustments applied).
     """
     # D-07: Apply splits first (before missed-days walk). When catch-up events
     # are being accumulated (missed_days non-empty), also collect Template 5
@@ -819,7 +821,7 @@ def _update_position_stops(
         {} if (catch_up_events is not None and missed_days) else None
     )
     _missed_set: set[date] = set(missed_days)
-    open_positions[:] = _apply_splits(
+    open_positions = _apply_splits(
         engine,
         open_positions,
         last_scan_date,
@@ -995,6 +997,8 @@ def _update_position_stops(
             regime_list = catch_up_events.setdefault("_regime", [])
             for d in sorted(regime_events_emitted):
                 regime_list.append(regime_events_emitted[d])
+
+    return open_positions
 
 
 def _detect_exit_triggers(
