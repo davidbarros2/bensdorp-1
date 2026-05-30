@@ -330,9 +330,9 @@ Wave 3 (blocked on Waves 1 and 2)
 
 **Wave 1** — Implementation (three parallel plans — independent files)
 
-- [ ] 10-01-PLAN.md — status.py (CMD-14) + test_status.py
-- [ ] 10-02-PLAN.md — refresh.py (CMD-15) + test_refresh.py
-- [ ] 10-03-PLAN.md — restore.py (CMD-02) + test_restore.py
+- [x] 10-01-PLAN.md — status.py (CMD-14) + test_status.py
+- [x] 10-02-PLAN.md — refresh.py (CMD-15) + test_refresh.py
+- [x] 10-03-PLAN.md — restore.py (CMD-02) + test_restore.py
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
@@ -409,7 +409,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | 7. Scan Command | 4/4 | Complete    | 2026-05-24 |
 | 8. Confirmation Commands | 7/7 | Complete   | 2026-05-25 |
 | 9. Consultation Commands | 9/9 | Complete   | 2026-05-25 |
-| 10. System Commands | 0/4 | Planned | - |
+| 10. System Commands | 3/4 | In Progress|  |
 | 11. Catch-Up Logic | 0/TBD | Not started | - |
 | 12. Validation Mode | 0/TBD | Not started | - |
 | 13. Edge Cases and Hardening | 0/TBD | Not started | - |
