@@ -13,7 +13,7 @@ from __future__ import annotations
 
 import math
 from datetime import UTC, date, datetime, timedelta
-from typing import Any, NamedTuple
+from typing import Any, NamedTuple, cast
 
 import pandas as pd
 import yfinance as yf
@@ -360,7 +360,7 @@ def _run_preflight(
 
     if row is not None:
         scan_dt = row.scan_date
-        if hasattr(scan_dt, "date"):
+        if isinstance(scan_dt, datetime):
             last_scan_date = scan_dt.date()
         else:
             last_scan_date = date.fromisoformat(str(scan_dt)[:10])
@@ -591,7 +591,7 @@ def _apply_splits(
             if ratio <= 0:
                 continue  # T-11-04: guard against malformed / zero ratios
 
-            split_date: date = pd.Timestamp(split_ts).date()
+            split_date: date = cast(date, pd.Timestamp(split_ts).date())  # type: ignore[redundant-cast]
 
             before_shares: int = pos.shares
             before_entry_close: float = pos.entry_close
@@ -774,15 +774,9 @@ def _get_close_for_day(
     df = price_dfs.get(symbol)
     if df is None or df.empty:
         return None
-    # Use pandas-native date extraction for type safety and performance.
-    # .dt.date works on datetime64 columns; fall back to isinstance check for
-    # object-dtype columns (e.g. Python date/datetime objects stored directly).
-    if pd.api.types.is_datetime64_any_dtype(df["trade_date"]):
-        mask = df["trade_date"].dt.date == target_date
-    else:
-        mask = df["trade_date"].apply(
-            lambda td: td.date() if isinstance(td, datetime) else td
-        ) == target_date
+    mask = df["trade_date"].apply(
+        lambda td: td.date() if isinstance(td, datetime) else td
+    ) == target_date
     matched = df.loc[mask, "close"]
     if matched.empty:
         return None
@@ -847,8 +841,8 @@ def _update_position_stops(
     if spx_df is not None and not spx_df.empty:
         for _, row in spx_df.iterrows():
             td = row["trade_date"]
-            d: date = td.date() if hasattr(td, "date") else td
-            spx_closes_by_date[d] = float(row["close"])
+            d: date = td.date() if isinstance(td, datetime) else cast(date, td)
+            spx_closes_by_date[d] = float(cast(Any, row["close"]))
 
     def _spx_regime_on(target_date: date) -> bool | None:
         """Return True (bull) / False (bear) / None (no data)."""
@@ -991,7 +985,7 @@ def _update_position_stops(
                 else _entry_date_as_date(pos)
             )
             for div_ts, div_amount in divs.items():
-                div_date: date = pd.Timestamp(div_ts).date()
+                div_date: date = cast(date, pd.Timestamp(div_ts).date())  # type: ignore[redundant-cast]
                 if div_date > missed_start and div_date in missed_set:
                     ev_list = catch_up_events.setdefault(pos.symbol, [])
                     ev_list.append(
