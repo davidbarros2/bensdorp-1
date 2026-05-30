@@ -11,16 +11,29 @@ D-16: Internal structure: _run_preflight, _fetch_data, _update_position_stops,
 
 from __future__ import annotations
 
+import math
 from datetime import UTC, date, datetime, timedelta
 from typing import Any, NamedTuple
 
 import pandas as pd
+import yfinance as yf
 from rich.console import Console
 from rich.text import Text
 from sqlalchemy import delete, insert, select, update
 from sqlalchemy.dialects.sqlite import insert as sqlite_insert
 from sqlalchemy.engine import Engine
 
+from bensdorp1.commands.events import (
+    render_dividend,
+    render_initial_stop_violated,
+    render_new_highest_close,
+    render_regime_bear_to_bull,
+    render_regime_bull_to_bear,
+    render_removed_from_sp500,
+    render_split_notification,
+    render_stock_split,
+    render_trailing_stop_violated,
+)
 from bensdorp1.config import DATA_DIR, MARKET_TZ
 from bensdorp1.data import (
     check_price_coverage,
@@ -28,6 +41,7 @@ from bensdorp1.data import (
     get_trading_days,
     update_price_data,
 )
+from bensdorp1.data.prices import _to_yfinance  # DATA-08: sole normalization site
 from bensdorp1.db import AuditEventType, create_backup, log_event
 from bensdorp1.db.schema import (
     config as config_table,
@@ -142,8 +156,8 @@ def run_scan(
         )
 
         # 1. Pre-flight: constituents, coverage, catch-up detection
-        constituents, missed_days, catch_up_notes, freshness_days = _run_preflight(
-            engine, con, today
+        constituents, missed_days, catch_up_notes, freshness_days, last_scan_date = (
+            _run_preflight(engine, con, today)
         )
         symbols: list[str] = list(constituents.keys())
         all_symbols: list[str] = symbols + ["^GSPC"]
@@ -159,15 +173,28 @@ def run_scan(
         # 4. Query open positions (closed_at IS NULL)
         open_positions = _query_open_positions(engine)
 
+        # 4b. Detect newly delisted positions (STATE-07)
+        missed_list: list[date] = [d.date() for d in missed_days]
+        catch_up_events: dict[str, list[str]] = {}
+        delisted_events = _detect_delisted_positions(
+            engine, open_positions, constituents
+        )
+        for ev in delisted_events:
+            # Extract symbol from event string (first word before double space)
+            sym = ev.split("  ")[0]
+            catch_up_events.setdefault(sym, []).append(ev)
+
         # 5. Update stop levels for missed days + today; detect exit triggers
         triggered_position_ids: dict[int, tuple[date, float, float]] = {}
         _update_position_stops(
             engine,
             open_positions,
-            [d.date() for d in missed_days],
+            missed_list,
             today,
             price_dfs,
             triggered_position_ids,
+            last_scan_date=last_scan_date,
+            catch_up_events=catch_up_events,
         )
 
         # Persist a temporary scan placeholder so _detect_exit_triggers can
@@ -266,11 +293,14 @@ def _run_preflight(
     engine: Engine,
     con: Console,
     today: date,
-) -> tuple[dict[str, str], pd.DatetimeIndex, list[str], int]:
+) -> tuple[dict[str, str], pd.DatetimeIndex, list[str], int, date | None]:
     """Run pre-flight checks and return execution context.
 
     Returns:
-        (constituents, missed_days, catch_up_notes, freshness_days)
+        (constituents, missed_days, catch_up_notes, freshness_days, last_scan_date)
+
+    Pitfall 7: last_scan_date is now returned so _apply_splits can compute the
+    D-05 split window start. last_scan_date is None if no prior scan exists.
     """
     # 1. Constituents freshness check (D-14)
     constituents, freshness_days = _get_constituents_with_freshness(engine)
@@ -286,6 +316,7 @@ def _run_preflight(
     # 3. Catch-up detection (D-08, D-11)
     missed_days: pd.DatetimeIndex = pd.DatetimeIndex([])
     catch_up_notes: list[str] = []
+    last_scan_date: date | None = None
 
     with engine.connect() as conn:
         row = conn.execute(
@@ -293,7 +324,7 @@ def _run_preflight(
         ).fetchone()
 
     if row is not None:
-        last_scan_date: date = row.scan_date.date()
+        last_scan_date = row.scan_date.date()
         yesterday: date = today - timedelta(days=1)
         start_of_window: date = last_scan_date + timedelta(days=1)
         if start_of_window <= yesterday:
@@ -301,10 +332,10 @@ def _run_preflight(
             if len(missed_days) > 0:
                 catch_up_notes.append(
                     f"Catch-up: updated stop levels for {len(missed_days)} "
-                    "missed trading days. Split detection deferred to Phase 11."
+                    "missed trading days."
                 )
 
-    return constituents, missed_days, catch_up_notes, freshness_days
+    return constituents, missed_days, catch_up_notes, freshness_days, last_scan_date
 
 
 def _get_constituents_with_freshness(engine: Engine) -> tuple[dict[str, str], int]:
@@ -462,6 +493,220 @@ def _query_open_positions(engine: Engine) -> list[_OpenPosition]:
 
 
 # ---------------------------------------------------------------------------
+# Split detection (DATA-06)
+# ---------------------------------------------------------------------------
+
+
+def _entry_date_as_date(pos: _OpenPosition) -> date:
+    """Extract the date part of pos.entry_date (handles datetime and date)."""
+    ed = pos.entry_date
+    return ed.date() if hasattr(ed, "date") else ed
+
+
+def _apply_splits(
+    engine: Engine,
+    open_positions: list[_OpenPosition],
+    last_scan_date: date | None,
+    today: date,
+    split_notifications: list[str],
+    catchup_split_events: dict[str, list[str]] | None = None,
+) -> list[_OpenPosition]:
+    """Apply any stock splits that occurred since last scan.
+
+    D-05: window approach — check split_date > max(entry_date, last_scan_date)
+    and split_date <= today. Window advances with each scan, so a split applied
+    in a prior scan falls outside the next scan's window (no re-application).
+    D-06: shares = floor(shares * ratio); price fields /= ratio.
+    T-11-04: ratio <= 0 guard; try/except around yf.Ticker(...).splits.
+
+    split_notifications: System-notes notifications (§8.3 format).
+    catchup_split_events: when not None, Template 5 events are appended per
+        symbol for splits that occurred within the missed-days catch-up window.
+
+    Returns the updated list (in-memory snapshots replaced at each split).
+    """
+    updated: list[_OpenPosition] = list(open_positions)
+    for idx, pos in enumerate(updated):
+        entry_d = _entry_date_as_date(pos)
+        window_start: date = max(
+            entry_d,
+            last_scan_date if last_scan_date is not None else entry_d,
+        )
+        try:
+            splits: Any = yf.Ticker(_to_yfinance(pos.symbol)).splits
+        except Exception:
+            continue  # data unavailable — skip split check for this position
+
+        if not hasattr(splits, "empty") or splits.empty:
+            continue
+
+        # Filter: split_date > window_start AND split_date <= today (D-05)
+        # splits.index is UTC-aware DatetimeIndex; extract .date() per element.
+        applicable: Any = splits[
+            (splits.index.map(lambda ts: ts.date()) > window_start)
+            & (splits.index.map(lambda ts: ts.date()) <= today)
+        ].sort_index()
+
+        if applicable.empty:
+            continue
+
+        for split_ts, ratio in applicable.items():
+            if ratio <= 0:
+                continue  # T-11-04: guard against malformed / zero ratios
+
+            split_date: date = pd.Timestamp(split_ts).date()
+
+            before_shares: int = pos.shares
+            before_entry_close: float = pos.entry_close
+            before_highest_close: float = pos.highest_close
+            before_initial_stop: float = pos.initial_stop
+            before_trailing_stop: float = pos.trailing_stop
+
+            new_shares: int = math.floor(pos.shares * ratio)
+            new_entry_close: float = pos.entry_close / ratio
+            new_highest_close: float = pos.highest_close / ratio
+            new_initial_stop: float = pos.initial_stop / ratio
+            new_trailing_stop: float = pos.trailing_stop / ratio
+
+            # Persist to DB (T-11-05: parameterized query only)
+            with engine.connect() as conn:
+                conn.execute(
+                    update(positions)
+                    .where(positions.c.id == pos.id)
+                    .values(
+                        shares=new_shares,
+                        entry_close=new_entry_close,
+                        highest_close=new_highest_close,
+                        initial_stop=new_initial_stop,
+                        trailing_stop=new_trailing_stop,
+                    )
+                )
+                conn.commit()
+
+            # Audit event (T-11-07)
+            log_event(
+                engine,
+                AuditEventType.SPLIT_APPLIED,
+                symbol=pos.symbol,
+                payload={
+                    "split_date": split_date.isoformat(),
+                    "ratio": ratio,
+                    "before": {
+                        "shares": before_shares,
+                        "entry_close": before_entry_close,
+                        "highest_close": before_highest_close,
+                        "initial_stop": before_initial_stop,
+                        "trailing_stop": before_trailing_stop,
+                    },
+                    "after": {
+                        "shares": new_shares,
+                        "entry_close": new_entry_close,
+                        "highest_close": new_highest_close,
+                        "initial_stop": new_initial_stop,
+                        "trailing_stop": new_trailing_stop,
+                    },
+                },
+            )
+
+            # Split notification for System notes (spec §8.3)
+            ratio_str: str = (
+                f"{int(ratio)}:1" if ratio == int(ratio) else f"{ratio}:1"
+            )
+            split_notifications.append(
+                render_split_notification(
+                    pos.symbol,
+                    ratio_str,
+                    split_date,
+                    before_shares,
+                    new_shares,
+                    before_entry_close,
+                    new_entry_close,
+                )
+            )
+
+            # Template 5 (catch-up variant) when accumulating catch-up events
+            if catchup_split_events is not None:
+                ev_list = catchup_split_events.setdefault(pos.symbol, [])
+                ev_list.append(
+                    render_stock_split(
+                        pos.symbol,
+                        ratio_str,
+                        split_date,
+                        before_shares,
+                        new_shares,
+                        before_entry_close,
+                        new_entry_close,
+                    )
+                )
+
+            # Update in-memory snapshot (carry id/symbol/entry_date/delisted)
+            pos = _OpenPosition(
+                id=pos.id,
+                symbol=pos.symbol,
+                entry_date=pos.entry_date,
+                entry_close=new_entry_close,
+                shares=new_shares,
+                initial_stop=new_initial_stop,
+                highest_close=new_highest_close,
+                trailing_stop=new_trailing_stop,
+                delisted=pos.delisted,
+            )
+
+        updated[idx] = pos
+
+    return updated
+
+
+# ---------------------------------------------------------------------------
+# Delisting detection (STATE-07)
+# ---------------------------------------------------------------------------
+
+
+def _detect_delisted_positions(
+    engine: Engine,
+    open_positions: list[_OpenPosition],
+    constituents: dict[str, str],
+) -> list[str]:
+    """Return catch-up event strings for newly delisted positions.
+
+    D-11: Sets positions.delisted = 1 on first detection only (idempotent
+    across subsequent scans — flag prevents re-logging). Positions already
+    flagged delisted == 1 are skipped entirely.
+
+    T-11-05: Only parameterized queries; T-11-07: POSITION_DELISTED_FROM_INDEX
+    audit event with position_id payload.
+    """
+    events: list[str] = []
+    constituent_symbols: set[str] = set(constituents.keys())
+
+    for pos in open_positions:
+        if pos.symbol in constituent_symbols:
+            continue  # still in index — nothing to do
+        if pos.delisted == 1:
+            continue  # already flagged — D-11 set-once semantics
+
+        # First detection: flag it
+        with engine.connect() as conn:
+            conn.execute(
+                update(positions)
+                .where(positions.c.id == pos.id)
+                .values(delisted=1)
+            )
+            conn.commit()
+
+        log_event(
+            engine,
+            AuditEventType.POSITION_DELISTED_FROM_INDEX,
+            symbol=pos.symbol,
+            payload={"position_id": pos.id},
+        )
+
+        events.append(render_removed_from_sp500(pos.symbol, removal_date=None))
+
+    return events
+
+
+# ---------------------------------------------------------------------------
 # Stop updates and exit trigger detection
 # ---------------------------------------------------------------------------
 
@@ -496,18 +741,100 @@ def _update_position_stops(
     today: date,
     price_dfs: dict[str, pd.DataFrame],
     triggered_position_ids: dict[int, tuple[date, float, float]],
+    *,
+    last_scan_date: date | None = None,
+    catch_up_events: dict[str, list[str]] | None = None,
 ) -> None:
     """Update position highest_close and trailing_stop for missed days + today.
 
     D-07: Once triggered, a position is frozen — no further stop updates.
     D-08: Walk each missed day chronologically, then today.
     D-17: Each scan UPDATEs the positions row for non-triggered open positions.
+    D-07 (split): _apply_splits() is called first on every scan before the walk.
+    D-08 (dividend): dividends fetched only when missed_days is non-empty.
+    D-03: Template 3 (new highest close) collapsed to initial→final per position.
+    D-10: Regime flips detected from price_daily SPX data.
 
     Modifies triggered_position_ids in-place to track which positions triggered.
+    Accumulates per-position catch-up events in catch_up_events (if provided).
     """
+    # D-07: Apply splits first (before missed-days walk). When catch-up events
+    # are being accumulated (missed_days non-empty), also collect Template 5
+    # events directly via catchup_split_events.
+    split_notifications: list[str] = []
+    catchup_split_ev: dict[str, list[str]] | None = (
+        {} if (catch_up_events is not None and missed_days) else None
+    )
+    open_positions[:] = _apply_splits(
+        engine,
+        open_positions,
+        last_scan_date,
+        today,
+        split_notifications,
+        catchup_split_ev,
+    )
+    # Merge Template 5 split events into catch_up_events immediately
+    if catchup_split_ev and catch_up_events is not None:
+        for sym, evs in catchup_split_ev.items():
+            catch_up_events.setdefault(sym, []).extend(evs)
+
+    # D-10: Build SPX closes by date for regime-flip detection
+    spx_df: pd.DataFrame | None = price_dfs.get("^GSPC")
+    spx_closes_by_date: dict[date, float] = {}
+    if spx_df is not None and not spx_df.empty:
+        for _, row in spx_df.iterrows():
+            td = row["trade_date"]
+            d: date = td.date() if hasattr(td, "date") else td
+            spx_closes_by_date[d] = float(row["close"])
+
+    def _spx_regime_on(target_date: date) -> bool | None:
+        """Return True (bull) / False (bear) / None (no data)."""
+        sorted_dates = sorted(d for d in spx_closes_by_date if d <= target_date)
+        if len(sorted_dates) < 200:
+            return None
+        closes_up_to = [spx_closes_by_date[d] for d in sorted_dates]
+        sma200 = sum(closes_up_to[-200:]) / 200
+        return closes_up_to[-1] > sma200
+
     all_days: list[date] = list(missed_days) + [today]
 
+    # D-03: Collapse multiple Template 3 events per position → one initial→final.
+    # pos.id → initial trailing_stop (before first new high during missed walk)
+    initial_ts_for_new_high: dict[int, float] = {}
+    had_new_high: dict[int, bool] = {}
+    final_new_high_date: dict[int, date] = {}
+    final_new_high_close: dict[int, float] = {}
+    final_new_ts: dict[int, float] = {}
+
+    # D-10: Track prev-day regime for regime-flip detection during missed days
+    prev_regime: bool | None = None
+    if missed_days and last_scan_date is not None:
+        prev_regime = _spx_regime_on(last_scan_date)
+
+    # D-08 (dividends): fetch once per position, only when missed_days non-empty
+    dividends_by_symbol: dict[str, Any] = {}
+    if missed_days and catch_up_events is not None:
+        for pos in open_positions:
+            try:
+                divs: Any = yf.Ticker(_to_yfinance(pos.symbol)).dividends
+                dividends_by_symbol[pos.symbol] = divs
+            except Exception:
+                pass
+
+    regime_events_emitted: dict[date, str] = {}
+
     for day in all_days:
+        # D-10: Detect regime flip (missed days only)
+        if catch_up_events is not None and day in missed_days:
+            cur_regime = _spx_regime_on(day)
+            if cur_regime is not None and prev_regime is not None:
+                if prev_regime and not cur_regime:
+                    regime_events_emitted[day] = render_regime_bull_to_bear(day)
+                elif not prev_regime and cur_regime:
+                    regime_events_emitted[day] = render_regime_bear_to_bull(day)
+            if cur_regime is not None:
+                prev_regime = cur_regime
+
         for idx, pos in enumerate(open_positions):
             if pos.id in triggered_position_ids:
                 continue  # D-07: frozen after trigger (Pitfall 8)
@@ -521,11 +848,37 @@ def _update_position_stops(
             eff_stop: float = compute_effective_stop(pos.initial_stop, new_ts)
 
             if is_exit_triggered(close, eff_stop):
-                # Mark as triggered; store (day, close, eff_stop) for use in
-                # _detect_exit_triggers (CR-02/WR-04: preserve actual trigger day
-                # and the correct effective stop that caused the trigger).
+                # CR-02/WR-04: store actual trigger day, close, effective stop
                 triggered_position_ids[pos.id] = (day, close, eff_stop)
+                # Accumulate catch-up event (missed days only)
+                if catch_up_events is not None and day in missed_days:
+                    ev_list = catch_up_events.setdefault(pos.symbol, [])
+                    if pos.trailing_stop >= pos.initial_stop:
+                        ev_list.append(
+                            render_trailing_stop_violated(
+                                pos.symbol, day, close, eff_stop
+                            )
+                        )
+                    else:
+                        ev_list.append(
+                            render_initial_stop_violated(
+                                pos.symbol, day, close, eff_stop
+                            )
+                        )
             else:
+                # Track new-high for D-03 collapse (missed days only)
+                if (
+                    new_hc > pos.highest_close
+                    and catch_up_events is not None
+                    and day in missed_days
+                ):
+                    if pos.id not in had_new_high:
+                        initial_ts_for_new_high[pos.id] = pos.trailing_stop
+                    had_new_high[pos.id] = True
+                    final_new_high_date[pos.id] = day
+                    final_new_high_close[pos.id] = new_hc
+                    final_new_ts[pos.id] = new_ts
+
                 # UPDATE positions SET highest_close, trailing_stop (D-17)
                 with engine.connect() as conn:
                     conn.execute(
@@ -534,7 +887,7 @@ def _update_position_stops(
                         .values(highest_close=new_hc, trailing_stop=new_ts)
                     )
                     conn.commit()
-                # Update in-memory snapshot so subsequent days use the new values
+                # Update in-memory snapshot for subsequent days
                 open_positions[idx] = _OpenPosition(
                     id=pos.id,
                     symbol=pos.symbol,
@@ -546,6 +899,46 @@ def _update_position_stops(
                     shares=pos.shares,
                     delisted=pos.delisted,
                 )
+                pos = open_positions[idx]
+
+    if catch_up_events is not None:
+        # D-03: emit collapsed Template 3 — one per position, initial→final stop
+        for pos in open_positions:
+            if had_new_high.get(pos.id):
+                ev_list = catch_up_events.setdefault(pos.symbol, [])
+                ev_list.append(
+                    render_new_highest_close(
+                        pos.symbol,
+                        final_new_high_date[pos.id],
+                        final_new_high_close[pos.id],
+                        initial_ts_for_new_high[pos.id],
+                        final_new_ts[pos.id],
+                    )
+                )
+
+        # D-08: emit dividend events (missed_days window only)
+        missed_set: set[date] = set(missed_days)
+        for pos in open_positions:
+            divs = dividends_by_symbol.get(pos.symbol)
+            if divs is None or (hasattr(divs, "empty") and divs.empty):
+                continue
+            missed_start: date = (
+                last_scan_date if last_scan_date is not None
+                else _entry_date_as_date(pos)
+            )
+            for div_ts, div_amount in divs.items():
+                div_date: date = pd.Timestamp(div_ts).date()
+                if div_date > missed_start and div_date in missed_set:
+                    ev_list = catch_up_events.setdefault(pos.symbol, [])
+                    ev_list.append(
+                        render_dividend(pos.symbol, div_date, float(div_amount))
+                    )
+
+        # D-10: store regime events under sentinel key for Plan 03 renderer
+        if regime_events_emitted:
+            regime_list = catch_up_events.setdefault("_regime", [])
+            for d in sorted(regime_events_emitted):
+                regime_list.append(regime_events_emitted[d])
 
 
 def _detect_exit_triggers(
