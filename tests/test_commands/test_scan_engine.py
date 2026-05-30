@@ -318,6 +318,9 @@ def test_query_pending_triggers_excludes_new(db_engine: Engine) -> None:
         initial_stop=93.0,
         highest_close=100.0,
         trailing_stop=75.0,
+        entry_close=100.0,
+        shares=10,
+        delisted=0,
     )
     pos2 = _OpenPosition(
         id=pos_id2,
@@ -326,6 +329,9 @@ def test_query_pending_triggers_excludes_new(db_engine: Engine) -> None:
         initial_stop=186.0,
         highest_close=200.0,
         trailing_stop=150.0,
+        entry_close=200.0,
+        shares=5,
+        delisted=0,
     )
     open_positions = [pos1, pos2]
 
@@ -907,6 +913,9 @@ def test_detect_exit_triggers_already_existing(db_engine: Engine) -> None:
         initial_stop=100.0,
         highest_close=100.0,
         trailing_stop=100.0,
+        entry_close=100.0,
+        shares=10,
+        delisted=0,
     )
 
     # Call with pos_id in triggered_ids (dict type after CR-02/WR-04)
