@@ -147,7 +147,8 @@ def test_restore_full_flow(
     assert result.exit_code == 0, f"Unexpected exit.\nOutput:\n{result.output}"
     assert "Database restored." in result.output
 
-    # Pre-restore backup was created (create_backup names files bensdorp1-{timestamp}.db)
+    # Pre-restore backup was created
+    # (create_backup names files bensdorp1-{timestamp}.db)
     backups_dir = tmp_path / "backups"
     pre_restore_files = [
         f for f in backups_dir.glob("bensdorp1-*.db") if f.name != "bensdorp1-latest.db"

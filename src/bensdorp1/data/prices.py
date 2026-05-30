@@ -11,13 +11,12 @@ DATA-10: check_price_coverage returns (covered, total); caller enforces the 0.95
     threshold.
 D-04: ^GSPC is always included in the download list (not a constituent but
     required for regime filter).
-DATA-06: Split detection deferred to Phase 11 (Catch-Up Logic).
+DATA-06: Split detection implemented in Phase 11 via _apply_splits() in
+    commands/_scan_engine.py.
 Depends on: bensdorp1.db.schema (price_daily, constituents_cache),
     bensdorp1.db.audit (log_event, AuditEventType).
 Used by: commands/init.py (Phase 6), commands/scan.py (Phase 7).
 """
-
-# DATA-06: Split detection deferred to Phase 11 (Catch-Up Logic)
 
 import time
 from datetime import UTC, date, datetime, timedelta

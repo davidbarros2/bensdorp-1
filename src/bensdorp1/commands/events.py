@@ -140,7 +140,7 @@ def render_market_delist(
     return (
         f"{symbol}  Delisted from the market{date_clause}.\n"
         f"      Verify via broker. Manual action required:\n"
-        f"      `bensdorp1 sell {symbol} PRICE --manual \"Delisted\"`"
+        f'      `bensdorp1 sell {symbol} PRICE --manual "Delisted"`'
     )
 
 
