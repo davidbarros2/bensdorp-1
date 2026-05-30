@@ -595,20 +595,28 @@ def _apply_splits(
             new_initial_stop: float = pos.initial_stop / ratio
             new_trailing_stop: float = pos.trailing_stop / ratio
 
-            # Persist to DB (T-11-05: parameterized query only)
-            with engine.connect() as conn:
-                conn.execute(
-                    update(positions)
-                    .where(positions.c.id == pos.id)
-                    .values(
-                        shares=new_shares,
-                        entry_close=new_entry_close,
-                        highest_close=new_highest_close,
-                        initial_stop=new_initial_stop,
-                        trailing_stop=new_trailing_stop,
+            # Persist to DB atomically (T-11-05: parameterized query only).
+            # CR-04: wrap in try/except so that if the DB write fails the
+            # in-memory snapshot is NOT updated and no audit event is emitted.
+            # A failed split will be re-attempted on the next scan because the
+            # window_start has not advanced (scan was not persisted).
+            try:
+                with engine.begin() as conn:  # atomic: commit or rollback together
+                    conn.execute(
+                        update(positions)
+                        .where(positions.c.id == pos.id)
+                        .values(
+                            shares=new_shares,
+                            entry_close=new_entry_close,
+                            highest_close=new_highest_close,
+                            initial_stop=new_initial_stop,
+                            trailing_stop=new_trailing_stop,
+                        )
                     )
-                )
-                conn.commit()
+            except Exception:
+                continue  # skip this split — will be re-attempted next scan
+
+            # Only reach here if DB write succeeded.
 
             # Audit event (T-11-07)
             log_event(
@@ -664,7 +672,8 @@ def _apply_splits(
                     )
                 )
 
-            # Update in-memory snapshot (carry id/symbol/entry_date/delisted)
+            # Update in-memory snapshot only after DB success
+            # (carry id/symbol/entry_date/delisted)
             pos = _OpenPosition(
                 id=pos.id,
                 symbol=pos.symbol,
