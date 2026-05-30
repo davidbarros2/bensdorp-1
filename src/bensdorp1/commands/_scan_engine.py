@@ -359,7 +359,11 @@ def _run_preflight(
         ).fetchone()
 
     if row is not None:
-        last_scan_date = row.scan_date.date()
+        scan_dt = row.scan_date
+        if hasattr(scan_dt, "date"):
+            last_scan_date = scan_dt.date()
+        else:
+            last_scan_date = date.fromisoformat(str(scan_dt)[:10])
         yesterday: date = today - timedelta(days=1)
         start_of_window: date = last_scan_date + timedelta(days=1)
         if start_of_window <= yesterday:
