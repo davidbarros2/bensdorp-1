@@ -162,4 +162,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-05-24 — Phase 7 complete (Scan Command — `bensdorp1 scan` with exit triggers + buy candidates, 315 tests, 92% coverage, mypy strict clean)*
+*Last updated: 2026-05-30 — Phase 10 complete (System Commands — `bensdorp1 status`, `refresh`, `restore` implemented, 375 tests, 91% coverage, mypy strict clean)*
