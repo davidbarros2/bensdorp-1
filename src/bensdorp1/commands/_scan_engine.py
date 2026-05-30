@@ -774,9 +774,10 @@ def _get_close_for_day(
     df = price_dfs.get(symbol)
     if df is None or df.empty:
         return None
-    mask = df["trade_date"].apply(
-        lambda td: td.date() if isinstance(td, datetime) else td
-    ) == target_date
+    mask = (
+        df["trade_date"].apply(lambda td: td.date() if isinstance(td, datetime) else td)
+        == target_date
+    )
     matched = df.loc[mask, "close"]
     if matched.empty:
         return None
