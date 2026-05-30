@@ -544,6 +544,7 @@ def _apply_splits(
     today: date,
     split_notifications: list[str],
     catchup_split_events: dict[str, list[str]] | None = None,
+    missed_set: set[date] | None = None,
 ) -> list[_OpenPosition]:
     """Apply any stock splits that occurred since last scan.
 
@@ -556,6 +557,8 @@ def _apply_splits(
     split_notifications: System-notes notifications (§8.3 format).
     catchup_split_events: when not None, Template 5 events are appended per
         symbol for splits that occurred within the missed-days catch-up window.
+    missed_set: actual set of missed trading days. Template 5 is only emitted
+        when the split_date falls within the absence window (not today).
 
     Returns the updated list (in-memory snapshots replaced at each split).
     """
@@ -664,8 +667,12 @@ def _apply_splits(
                 )
             )
 
-            # Template 5 (catch-up variant) when accumulating catch-up events
-            if catchup_split_events is not None:
+            # Template 5 (catch-up variant) when accumulating catch-up events.
+            # WR-03: only emit for splits that fell within the absence window
+            # (split_date in missed_set), not for splits that happened today.
+            if catchup_split_events is not None and (
+                missed_set is None or split_date in missed_set
+            ):
                 ev_list = catchup_split_events.setdefault(pos.symbol, [])
                 ev_list.append(
                     render_stock_split(
@@ -811,6 +818,7 @@ def _update_position_stops(
     catchup_split_ev: dict[str, list[str]] | None = (
         {} if (catch_up_events is not None and missed_days) else None
     )
+    _missed_set: set[date] = set(missed_days)
     open_positions[:] = _apply_splits(
         engine,
         open_positions,
@@ -818,6 +826,7 @@ def _update_position_stops(
         today,
         _split_notif,
         catchup_split_ev,
+        missed_set=_missed_set,
     )
     # Merge Template 5 split events into catch_up_events immediately
     if catchup_split_ev and catch_up_events is not None:
